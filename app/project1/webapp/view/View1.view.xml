@@ -14,7 +14,7 @@
             <Input id="emailInput" placeholder="Email" type="Email" />
             <Input id="phoneInput" placeholder="Phone" type="Tel" />
         
-            <!-- FileUploader for Multiple Files -->
+          
             <u:FileUploader 
                 id="fileUploader" 
                 name="myFileUpload" 
@@ -32,14 +32,14 @@
                 type="Emphasized" />
         </VBox>
 
-        <!-- Toolbar for Download Section -->
+        
         <Toolbar id='tb' class="sapUiTinyMarginTop">
             <ToolbarSpacer id='tb2'/>
             <Title id='tb1' text="Download Vendor Files" level="H2"/>
             <ToolbarSpacer id='tb4'/>
         </Toolbar>
 
-        <!-- Section for Downloading Files -->
+       
         <VBox id='v2' class="sapUiSmallMargin" renderType="Bare">
             <Input id="vendorIdDownload" placeholder="Enter Vendor ID to Download Files" />
             <Button 

@@ -90,63 +90,50 @@ module.exports = async (srv) => {
       });
     });
   }
-  srv.on('download', async (req) => {
-    const { vendor_ID } = req.data;
+  const archiver = require('archiver');
+  
 
-    console.log("Received vendor_ID:", vendor_ID);
+srv.on('download', async (req) => {
+  const { vendor_ID } = req.data;
 
-    if (!vendor_ID) {
-      req._.res.status(400).json({ message: 'Missing vendor_ID' });
-      return;
-    }
+  if (!vendor_ID) {
+    req._.res.status(400).json({ message: 'Missing vendor_ID' });
+    return;
+  }
 
-    const files = await SELECT.from('my.vendor.VendorPDFs')
-      .columns('ID', 'fileName', 'content', 'vendor_ID')
-      .where({ vendor_ID });
+  const files = await SELECT.from('my.vendor.VendorPDFs')
+    .columns('ID', 'fileName', 'content', 'vendor_ID')
+    .where({ vendor_ID });
 
-    console.log("Files fetched:", files);
+  if (!files || files.length === 0) {
+    req._.res.status(404).json({ message: 'No files found for this vendor' });
+    return;
+  }
 
-    if (!files || files.length === 0) {
-      req._.res.status(404).json({ message: 'No files found for this vendor' });
-      return;
-    }
-
-    const file = files[0];
-    const content = file.content;
-
-    console.log("File content:", content);
-
-    if (!content) {
-      req._.res.status(400).json({ message: 'Invalid or missing file content' });
-      return;
-    }
-
-    let pdfBuffer;
-
-    try {
-      if (Buffer.isBuffer(content)) {
-        pdfBuffer = content;
-      } else if (typeof content === 'string') {
-        pdfBuffer = Buffer.from(content, 'base64');
-      } else if (content instanceof Readable) {
-        console.log(" Hit stream conversion");
-        pdfBuffer = await streamToBuffer(content);
-        console.log("Converted stream to buffer with size:", pdfBuffer.length);
-      } else {
-        req._.res.status(400).json({ message: 'Invalid or missing file content' });
-        return;
-      }
-
-      console.log("Sending PDF with size:", pdfBuffer.length);
-
-      req._.res.setHeader('Content-Type', 'application/pdf');
-      req._.res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
-      req._.res.send(pdfBuffer);
-      console.log("File sent successfully"); 
-
-    } catch (err) {
-      console.error("Error processing the file:", err);
-      req._.res.status(500).json({ message: 'Error processing the file content', error: err });
-    }
+  const zip = archiver('zip', {
+    zlib: { level: 9 }
   });
+
+  req._.res.setHeader('Content-Type', 'application/zip');
+  req._.res.setHeader('Content-Disposition', `attachment; filename="vendor_${vendor_ID}.zip"`);
+
+  zip.pipe(req._.res);
+
+  for (const file of files) {
+    let fileContent;
+
+    if (Buffer.isBuffer(file.content)) {
+      fileContent = file.content;
+    } else if (typeof file.content === 'string') {
+      fileContent = Buffer.from(file.content, 'base64');
+    } else if (file.content instanceof Readable) {
+      fileContent = await streamToBuffer(file.content);
+    }
+
+    zip.append(fileContent, { name: `vendor_${vendor_ID}/${file.fileName}` });
+  }
+
+  zip.finalize();
+});
+
 };

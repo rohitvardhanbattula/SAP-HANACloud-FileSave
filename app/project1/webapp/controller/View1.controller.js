@@ -95,6 +95,7 @@ sap.ui.define([
     },
     onDownload: function () {
       const vendorId = this.byId("vendorIdDownload").getValue();
+      
       fetch(`/odata/v4/vendor/download`, {
         method: "POST",
         headers: {
@@ -106,16 +107,16 @@ sap.ui.define([
           if (!response.ok) {
             throw new Error("Failed to download file");
           }
-
+    
           const contentDisposition = response.headers.get("Content-Disposition");
-          let filename = "downloaded_file";
+          let filename = `vendor_${vendorId}.zip`;
           if (contentDisposition && contentDisposition.includes("filename=")) {
             filename = contentDisposition.split("filename=")[1].replace(/"/g, "");
           }
-
+    
           const blob = await response.blob();
           const url = window.URL.createObjectURL(blob);
-
+    
           const a = document.createElement("a");
           a.href = url;
           a.download = filename;
@@ -128,8 +129,10 @@ sap.ui.define([
           console.error("Error downloading file:", err);
           sap.m.MessageToast.show("Failed to download file");
         });
-        this.byId("vendorIdDownload").setValue("");
+    
+      this.byId("vendorIdDownload").setValue("");
     }
+    
 
   });
 });

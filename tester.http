@@ -1,0 +1,21 @@
+###
+POST http://localhost:4004/odata/v2/vendor/VendorCreation
+Content-Type: application/json
+
+{
+    
+        
+            "ID": "template3",
+            "name":"Template Description",
+            "email": "EMP123",
+            "phone": "1234"
+        
+    
+}
+
+###
+GET http://localhost:4004/odata/v4/vendor/Vendors(guid'1234567')/pdfs
+
+
+###
+GET http://localhost:4004/odata/v2/vendor/download

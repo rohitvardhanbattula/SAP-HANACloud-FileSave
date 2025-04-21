@@ -1,0 +1,53 @@
+<mvc:View 
+    controllerName="project1.controller.View1"
+    xmlns:l="sap.ui.layout"
+    xmlns:u="sap.ui.unified"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    class="viewPadding"
+    displayBlock="true">
+  
+    <Page id="page" title="{i18n>title}">
+        <VBox id='v1' class="sapUiSmallMargin" renderType="Bare">
+            <Input id="idInput" placeholder="Vendor ID" />
+            <Input id="nameInput" placeholder="Vendor Name" />
+            <Input id="emailInput" placeholder="Email" type="Email" />
+            <Input id="phoneInput" placeholder="Phone" type="Tel" />
+        
+            <!-- FileUploader for Multiple Files -->
+            <u:FileUploader 
+                id="fileUploader" 
+                name="myFileUpload" 
+                multiple="true" 
+                uploadUrl="upload/" 
+                tooltip="Upload your files"
+                fileType="pdf,docx,png,jpeg"
+                change="onFileChange"/>
+        
+            <Button 
+                id="button"
+                text="Submit"
+                press="onSubmit"
+                class="sapUiSmallMarginTop"
+                type="Emphasized" />
+        </VBox>
+
+        <!-- Toolbar for Download Section -->
+        <Toolbar id='tb' class="sapUiTinyMarginTop">
+            <ToolbarSpacer id='tb2'/>
+            <Title id='tb1' text="Download Vendor Files" level="H2"/>
+            <ToolbarSpacer id='tb4'/>
+        </Toolbar>
+
+        <!-- Section for Downloading Files -->
+        <VBox id='v2' class="sapUiSmallMargin" renderType="Bare">
+            <Input id="vendorIdDownload" placeholder="Enter Vendor ID to Download Files" />
+            <Button 
+                id="downloadButton"
+                text="Download Files"
+                press="onDownload"
+                class="sapUiSmallMarginTop"
+                type="Emphasized" />
+        </VBox>
+    </Page>
+</mvc:View>

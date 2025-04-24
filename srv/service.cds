@@ -7,12 +7,14 @@ service VendorService {
   action VendorCreation(ID : UUID,
                         name : String,
                         email : String,
-                        phone : String) returns String;
+                        phone : String,
+                        status : String) returns String;
 
   action uploadPDF(vendorID : UUID)     returns String;
 
-  action download(vendor_ID : UUID)     returns array of {
+  function download(vendor_ID : UUID)     returns array of {
     fileName : String;
     content : String;
+    mimeType : String;
   };
 }

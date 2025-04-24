@@ -1,0 +1,66 @@
+<mvc:View
+  controllerName="project1.controller.View2"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  displayBlock="true"
+  class="sapUiContentPadding">
+
+  <Page title="Vendor Attachments">
+    <VBox class="sapUiSmallMargin">
+
+      <!-- Vendor ID Display -->
+      <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+        <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle sapUiSmallMarginBottom"/>
+      </HBox>
+
+      <!-- Busy Indicator -->
+      <BusyIndicator id="busyIndicator" visible="false" />
+
+      <!-- Download All Button -->
+      <HBox justifyContent="Center" class="sapUiSmallMarginTop">
+        <Button text="Download All Files"
+                icon="sap-icon://download"
+                type="Emphasized"
+                press=".onDownloadAll"
+                visible="{= ${attachmentModel>/files}.length > 0 }"/>
+      </HBox>
+
+      <!-- Attachment Table -->
+      <Table id="attachmentTable"
+             items="{attachmentModel>/files}"
+             class="sapUiSmallMarginTop"
+             inset="false"
+             alternateRowColors="true"
+             noDataText="No attachments available.">
+        <columns>
+          <Column width="70%">
+            <Text text="File Name" />
+          </Column>
+          <Column width="30%" hAlign="Center">
+            <Text text="Download" />
+          </Column>
+        </columns>
+        <items>
+          <ColumnListItem>
+            <cells>
+              <Text text="{attachmentModel>fileName}" />
+              <Button icon="sap-icon://download"
+                      tooltip="Download File"
+                      press=".onDownloadPress"
+                      type="Transparent" />
+            </cells>
+          </ColumnListItem>
+        </items>
+      </Table>
+
+      <!-- No Attachments Message -->
+      <HBox justifyContent="Center" class="sapUiSmallMarginTop">
+        <Text id="noAttachmentsMessage"
+              visible="false"
+              text="No attachments found for this vendor."
+              class="sapUiSmallMarginTop sapMText sapUiContentPadding"/>
+      </HBox>
+
+    </VBox>
+  </Page>
+</mvc:View>

@@ -17,11 +17,24 @@
     },
     "dataSources": {
       "mainService": {
-        "uri": "/odata/v2/vendor/",
+        "uri": "/odata/v4/vendor/",
         "type": "OData",
         "settings": {
           "annotations": [],
-          "odataVersion": "2.0"
+          "odataVersion": "4.0",
+          "useBatch": false
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "project1-display": {
+          "semanticObject": "project1",
+          "action": "display",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
         }
       }
     }
@@ -43,7 +56,7 @@
     }
   },
   "sap.ui5": {
-    "flexEnabled": true,
+    "flexEnabled": false,
     "dependencies": {
       "minUI5Version": "1.134.1",
       "libs": {
@@ -60,7 +73,7 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "project1.i18n.i18n",
-          "useBatch": false 
+          "useBatch": false
         }
       },
       "": {
@@ -81,38 +94,45 @@
       ]
     },
     "routing": {
-      "config": {
-        "routerClass": "sap.m.routing.Router",
-        "controlAggregation": "pages",
-        "controlId": "app",
-        "transition": "slide",
-        "type": "View",
-        "viewType": "XML",
-        "path": "project1.view",
-        "async": true,
-        "viewPath": "project1.view"
-      },
-      "routes": [
-        {
-          "name": "RouteView1",
-          "pattern": ":?query:",
-          "target": [
-            "TargetView1"
-          ]
-        }
-      ],
-      "targets": {
-        "TargetView1": {
-          "id": "View1",
-          "name": "View1"
-        }
-      }
+  "config": {
+    "routerClass": "sap.m.routing.Router",
+    "viewType": "XML",
+    "viewPath": "project1.view",
+    "controlId": "app",
+    "controlAggregation": "pages",
+    "async": true
+  },
+  "routes": [
+    {
+      "pattern": "",
+      "name": "View1",
+      "target": "View1"
     },
+    {
+      "pattern": "attachments/{vendor_Id}",
+      "name": "View2",
+      "target": "View2"
+    }
+  ],
+  "targets": {
+    "View1": {
+      "viewName": "View1"
+    },
+    "View2": {
+      "viewName": "View2"
+    }
+  }
+}
+,
     "rootView": {
       "viewName": "project1.view.App",
       "type": "XML",
       "id": "App",
       "async": true
     }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "pdfsave.service"
   }
 }

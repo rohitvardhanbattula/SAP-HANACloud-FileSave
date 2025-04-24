@@ -1,3 +1,4 @@
+
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
   "sap/m/MessageToast",
@@ -8,9 +9,27 @@ sap.ui.define([
   return Controller.extend("project1.controller.View1", {
 
     onInit: function () {
-
+      const oAttachModel = new JSONModel([]);
+      this.getView().setModel(oAttachModel, "attachmentModel");
+      fetch("/odata/v4/vendor/Vendors")
+        .then(response => response.json())
+        .then(data => {
+          const oModel = new sap.ui.model.json.JSONModel(data.value);
+          this.getView().setModel(oModel, "VendModel");
+        })
+        .catch(err => {
+          console.error("Failed to fetch vendor PDFs:", err);
+        });
     },
-
+    onVendorSelect: function (oEvent) {
+      const sVendorID = oEvent.getParameter("listItem")
+        .getBindingContext("VendModel").getProperty("ID");
+      const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+      oRouter.navTo("View2", {
+        vendor_Id: sVendorID
+      });
+    }
+    ,
     onFileChange: function (oEvent) {
 
       const files = oEvent.getParameter("files");
@@ -27,14 +46,10 @@ sap.ui.define([
       const name = this.byId("nameInput").getValue();
       const email = this.byId("emailInput").getValue();
       const phone = this.byId("phoneInput").getValue();
+      const status =this.byId("statusInput").getValue();
 
       if (!name || !email || !phone || !Id) {
         MessageToast.show("Please fill in all vendor details.");
-        return;
-      }
-
-      if (!this.selectedFiles || this.selectedFiles.length === 0) {
-        MessageToast.show("Please select at least one file to upload.");
         return;
       }
 
@@ -45,7 +60,8 @@ sap.ui.define([
           ID: Id,
           name: name,
           email: email,
-          phone: phone
+          phone: phone,
+          status:status
         };
 
         const response = await fetch("/odata/v2/vendor/VendorCreation", {
@@ -63,7 +79,7 @@ sap.ui.define([
 
         const vendorID = Id;
 
-
+        if(this.selectedFiles.length>0){
         for (let i = 0; i < this.selectedFiles.length; i++) {
           const file = this.selectedFiles[i];
           const formData = new FormData();
@@ -79,13 +95,15 @@ sap.ui.define([
             throw new Error(`Failed to upload file: ${file.name}`);
           }
         }
+      }
 
         MessageToast.show("Vendor and files uploaded successfully.");
-
+        this.onInit();
         this.byId("idInput").setValue("");
         this.byId("nameInput").setValue("");
         this.byId("emailInput").setValue("");
         this.byId("phoneInput").setValue("");
+        this.byId("statusInput").setValue("");
         this.byId("fileUploader").clear();
 
       } catch (err) {
@@ -93,46 +111,28 @@ sap.ui.define([
         MessageToast.show("Error occurred during vendor or file upload.");
       }
     },
-    onDownload: function () {
-      const vendorId = this.byId("vendorIdDownload").getValue();
-      
-      fetch(`/odata/v4/vendor/download`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ vendor_ID: vendorId })
-      })
-        .then(async (response) => {
-          if (!response.ok) {
-            throw new Error("Failed to download file");
-          }
+    onFilter: function () {
+      const oTable = this.byId("vendorTable");
+      const oBinding = oTable.getBinding("items");
     
-          const contentDisposition = response.headers.get("Content-Disposition");
-          let filename = `vendor_${vendorId}.zip`;
-          if (contentDisposition && contentDisposition.includes("filename=")) {
-            filename = contentDisposition.split("filename=")[1].replace(/"/g, "");
-          }
+      const idVal = this.byId("vendorIdFilter").getValue();
+      const nameVal = this.byId("vendorNameFilter").getValue();
+      const statusVal = this.byId("statusFilter").getValue();
     
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
+      const filters = [];
     
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = filename;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          window.URL.revokeObjectURL(url);
-        })
-        .catch((err) => {
-          console.error("Error downloading file:", err);
-          sap.m.MessageToast.show("Failed to download file");
-        });
+      if (idVal) {
+        filters.push(new sap.ui.model.Filter("ID", sap.ui.model.FilterOperator.Contains, idVal));
+      }
+      if (nameVal) {
+        filters.push(new sap.ui.model.Filter("name", sap.ui.model.FilterOperator.Contains, nameVal));
+      }
+      if (statusVal) {
+        filters.push(new sap.ui.model.Filter("status", sap.ui.model.FilterOperator.Contains, statusVal));
+      }
     
-      this.byId("vendorIdDownload").setValue("");
+      oBinding.filter(filters);
     }
     
-
   });
 });

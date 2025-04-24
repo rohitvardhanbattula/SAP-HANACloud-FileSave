@@ -8,15 +8,15 @@
   <Page title="Vendor Attachments">
     <VBox class="sapUiSmallMargin">
 
-      <!-- Vendor ID Display -->
+      
       <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
         <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle sapUiSmallMarginBottom"/>
       </HBox>
 
-      <!-- Busy Indicator -->
+   
       <BusyIndicator id="busyIndicator" visible="false" />
 
-      <!-- Download All Button -->
+   
       <HBox justifyContent="Center" class="sapUiSmallMarginTop">
         <Button text="Download All Files"
                 icon="sap-icon://download"
@@ -25,7 +25,7 @@
                 visible="{= ${attachmentModel>/files}.length > 0 }"/>
       </HBox>
 
-      <!-- Attachment Table -->
+   
       <Table id="attachmentTable"
              items="{attachmentModel>/files}"
              class="sapUiSmallMarginTop"
@@ -53,7 +53,6 @@
         </items>
       </Table>
 
-      <!-- No Attachments Message -->
       <HBox justifyContent="Center" class="sapUiSmallMarginTop">
         <Text id="noAttachmentsMessage"
               visible="false"

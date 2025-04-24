@@ -7,16 +7,10 @@
 
   <Page title="Vendor Attachments">
     <VBox class="sapUiSmallMargin">
-
-      
       <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
         <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle sapUiSmallMarginBottom"/>
       </HBox>
-
-   
       <BusyIndicator id="busyIndicator" visible="false" />
-
-   
       <HBox justifyContent="Center" class="sapUiSmallMarginTop">
         <Button text="Download All Files"
                 icon="sap-icon://download"
@@ -24,8 +18,6 @@
                 press=".onDownloadAll"
                 visible="{= ${attachmentModel>/files}.length > 0 }"/>
       </HBox>
-
-   
       <Table id="attachmentTable"
              items="{attachmentModel>/files}"
              class="sapUiSmallMarginTop"
@@ -52,14 +44,12 @@
           </ColumnListItem>
         </items>
       </Table>
-
       <HBox justifyContent="Center" class="sapUiSmallMarginTop">
         <Text id="noAttachmentsMessage"
               visible="false"
               text="No attachments found for this vendor."
               class="sapUiSmallMarginTop sapMText sapUiContentPadding"/>
       </HBox>
-
     </VBox>
   </Page>
 </mvc:View>

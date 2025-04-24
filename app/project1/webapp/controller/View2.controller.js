@@ -48,8 +48,7 @@ sap.ui.define([
         const byteChars = atob(content);
         const byteNumbers = Array.from(byteChars, c => c.charCodeAt(0));
         const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: mimeType });
-  
+        const blob = new Blob([byteArray], { type: mimeType });  
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
@@ -66,7 +65,6 @@ sap.ui.define([
           sap.m.MessageToast.show("No files to download.");
           return;
         }
-      
         const zip = new JSZip();
         aFiles.forEach(file => {
           const byteChars = atob(file.content);

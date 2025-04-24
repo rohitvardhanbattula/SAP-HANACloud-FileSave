@@ -31,13 +31,8 @@ sap.ui.define([
     }
     ,
     onFileChange: function (oEvent) {
-
       const files = oEvent.getParameter("files");
-
-
       this.selectedFiles = files;
-
-
       console.log(this.selectedFiles);
     },
 
@@ -46,24 +41,19 @@ sap.ui.define([
       const name = this.byId("nameInput").getValue();
       const email = this.byId("emailInput").getValue();
       const phone = this.byId("phoneInput").getValue();
-      const status =this.byId("statusInput").getValue();
-
+      const status = this.byId("statusInput").getValue();
       if (!name || !email || !phone || !Id) {
         MessageToast.show("Please fill in all vendor details.");
         return;
       }
-
-
       try {
-
         const vendorPayload = {
           ID: Id,
           name: name,
           email: email,
           phone: phone,
-          status:status
+          status: status
         };
-
         const response = await fetch("/odata/v2/vendor/VendorCreation", {
           method: "POST",
           headers: {
@@ -71,32 +61,26 @@ sap.ui.define([
           },
           body: JSON.stringify(vendorPayload)
         });
-
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error("Vendor creation failed: " + errorText);
         }
-
         const vendorID = Id;
-
-        if(this.selectedFiles.length>0){
-        for (let i = 0; i < this.selectedFiles.length; i++) {
-          const file = this.selectedFiles[i];
-          const formData = new FormData();
-          formData.append("file", file);
-          formData.append("vendorID", vendorID);
-
-          const response = await fetch("/uploadPDF", {
-            method: "POST",
-            body: formData
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to upload file: ${file.name}`);
+        if (this.selectedFiles.length > 0) {
+          for (let i = 0; i < this.selectedFiles.length; i++) {
+            const file = this.selectedFiles[i];
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("vendorID", vendorID);
+            const response = await fetch("/uploadPDF", {
+              method: "POST",
+              body: formData
+            });
+            if (!response.ok) {
+              throw new Error(`Failed to upload file: ${file.name}`);
+            }
           }
         }
-      }
-
         MessageToast.show("Vendor and files uploaded successfully.");
         this.onInit();
         this.byId("idInput").setValue("");
@@ -114,13 +98,10 @@ sap.ui.define([
     onFilter: function () {
       const oTable = this.byId("vendorTable");
       const oBinding = oTable.getBinding("items");
-    
       const idVal = this.byId("vendorIdFilter").getValue();
       const nameVal = this.byId("vendorNameFilter").getValue();
       const statusVal = this.byId("statusFilter").getValue();
-    
       const filters = [];
-    
       if (idVal) {
         filters.push(new sap.ui.model.Filter("ID", sap.ui.model.FilterOperator.Contains, idVal));
       }
@@ -130,9 +111,7 @@ sap.ui.define([
       if (statusVal) {
         filters.push(new sap.ui.model.Filter("status", sap.ui.model.FilterOperator.Contains, statusVal));
       }
-    
       oBinding.filter(filters);
     }
-    
   });
 });

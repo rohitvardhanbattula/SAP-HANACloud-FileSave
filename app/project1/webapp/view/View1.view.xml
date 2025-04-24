@@ -9,8 +9,7 @@
   <Page title="Vendor Management">
     <VBox class="sapUiSmallMargin">
       <Title title="Create Vendor" level="H3" class="sapUiSmallMarginBottom"/>
-
-      <HBox justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom">
+      <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
         <Input id="idInput" placeholder="Vendor ID" class="sapUiTinyMarginEnd" width="12rem"/>
         <Input id="nameInput" placeholder="Vendor Name" class="sapUiTinyMarginEnd" width="12rem"/>
         <Input id="emailInput" placeholder="Email" class="sapUiTinyMarginEnd" width="14rem"/>
@@ -18,7 +17,7 @@
         <Input id="statusInput" placeholder="Status" class="sapUiTinyMarginEnd" width="10rem"/>
       </HBox>
 
-      <HBox justifyContent="Start" alignItems="Center" class="sapUiSmallMarginBottom">
+      <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
         <u:FileUploader
           id="fileUploader"
           name="myFileUpload"
@@ -32,18 +31,15 @@
 
     <VBox class="sapUiSmallMarginTop">
       <HBox justifyContent="Center">
-  <Title text="Vendors" level="H3" class="sapUiSmallMarginBottom"/>
-  </HBox>
-  <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
-  <Toolbar>
-    <Input id="vendorIdFilter" placeholder="Filter by ID" width="10rem" liveChange="onFilter"/>
-    <Input id="vendorNameFilter" placeholder="Filter by Name" width="12rem" liveChange="onFilter"/>
-    <Input id="statusFilter" placeholder="Filter by Status" width="10rem" liveChange="onFilter"/>
-  </Toolbar>
-</HBox>
-
-
-
+        <Title text="Vendor Details" level="H3" class="sapUiSmallMarginBottom"/>
+      </HBox>
+      <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+        <Toolbar>
+          <Input id="vendorIdFilter" placeholder="Filter by ID" width="10rem" liveChange="onFilter"/>
+          <Input id="vendorNameFilter" placeholder="Filter by Name" width="12rem" liveChange="onFilter"/>
+          <Input id="statusFilter" placeholder="Filter by Status" width="10rem" liveChange="onFilter"/>
+        </Toolbar>
+      </HBox>
       <Table id="vendorTable"
              mode="SingleSelectMaster"
              selectionChange="onVendorSelect"
@@ -52,19 +48,19 @@
              alternateRowColors="true"
              class="sapUiResponsiveMargin">
         <columns>
-          <Column><Text text="ID"/></Column>
-          <Column><Text text="Name"/></Column>
-          <Column><Text text="Phone"/></Column>
-          <Column><Text text="Email"/></Column>
-          <Column><Text text="Status"/></Column>
+          <Column hAlign="Center"><Text text="VendorID"/></Column>
+          <Column hAlign="Center"><Text text="Name"/></Column>
+          <Column hAlign="Center"><Text text="Email"/></Column>
+          <Column hAlign="Center"><Text text="Phone"/></Column>
+          <Column hAlign="Center"><Text text="Status"/></Column>
         </columns>
         <items>
           <ColumnListItem>
             <cells>
               <Text text="{VendModel>ID}"/>
               <Text text="{VendModel>name}"/>
-              <Text text="{VendModel>phone}"/>
               <Text text="{VendModel>email}"/>
+              <Text text="{VendModel>phone}"/>
               <Text text="{VendModel>status}"/>
             </cells>
           </ColumnListItem>

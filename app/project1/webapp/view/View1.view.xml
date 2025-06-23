@@ -14,7 +14,6 @@
         <Input id="nameInput" placeholder="Vendor Name" class="sapUiTinyMarginEnd" width="12rem"/>
         <Input id="emailInput" placeholder="Email" class="sapUiTinyMarginEnd" width="14rem"/>
         <Input id="phoneInput" placeholder="Phone" class="sapUiTinyMarginEnd" width="10rem"/>
-        <Input id="statusInput" placeholder="Status" class="sapUiTinyMarginEnd" width="10rem"/>
       </HBox>
 
       <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
@@ -28,7 +27,7 @@
         <Button text="Submit" press="onSubmit" type="Emphasized"/>
       </HBox>
     </VBox>
-
+ 
     <VBox class="sapUiSmallMarginTop">
       <HBox justifyContent="Center">
         <Title text="Vendor Details" level="H3" class="sapUiSmallMarginBottom"/>
@@ -40,32 +39,43 @@
           <Input id="statusFilter" placeholder="Filter by Status" width="10rem" liveChange="onFilter"/>
         </Toolbar>
       </HBox>
-      <Table id="vendorTable"
-             mode="SingleSelectMaster"
-             selectionChange="onVendorSelect"
-             items="{VendModel>/}"
-             inset="false"
-             alternateRowColors="true"
-             class="sapUiResponsiveMargin">
-        <columns>
-          <Column hAlign="Center"><Text text="VendorID"/></Column>
-          <Column hAlign="Center"><Text text="Name"/></Column>
-          <Column hAlign="Center"><Text text="Email"/></Column>
-          <Column hAlign="Center"><Text text="Phone"/></Column>
-          <Column hAlign="Center"><Text text="Status"/></Column>
-        </columns>
-        <items>
-          <ColumnListItem>
-            <cells>
-              <Text text="{VendModel>ID}"/>
-              <Text text="{VendModel>name}"/>
-              <Text text="{VendModel>email}"/>
-              <Text text="{VendModel>phone}"/>
-              <Text text="{VendModel>status}"/>
-            </cells>
-          </ColumnListItem>
-        </items>
-      </Table>
+      <Table
+  id="vendorTable"
+  mode="SingleSelectMaster"
+  selectionChange="onVendorSelect"
+  items="{VendModel>/}"
+  inset="false"
+  alternateRowColors="true"
+  class="sapUiResponsiveMargin"
+  fixedLayout="true"           
+  width="100%"                
+  busyIndicatorDelay="0"
+>
+  <columns>
+    <Column width="8em" hAlign="Center"><Text text="Vendor ID"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Name"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Email"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Phone"/></Column>
+    <Column width="8em" hAlign="Center"><Text text="Status"/></Column>
+    <Column width="12em" hAlign="Center"><Text text="Approver Comments 1"/></Column>
+    <Column width="12em" hAlign="Center"><Text text="Approver Comments 2"/></Column>
+  </columns>
+
+  <items>
+    <ColumnListItem>
+      <cells>
+        <Text text="{VendModel>ID}" wrapping="false"/>
+        <Text text="{VendModel>name}" wrapping="false"/>
+        <Text text="{VendModel>email}" wrapping="false"/>
+        <Text text="{VendModel>phone}" wrapping="false"/>
+        <Text text="{VendModel>status}" wrapping="false"/>
+        <Text text="{VendModel>approvercomments1}" wrapping="false"/>
+        <Text text="{VendModel>approvercomments2}" wrapping="false"/>
+      </cells>
+    </ColumnListItem>
+  </items>
+</Table>
+
     </VBox>
   </Page>
 </mvc:View>

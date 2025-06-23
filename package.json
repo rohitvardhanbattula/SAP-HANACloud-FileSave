@@ -23,7 +23,8 @@
     "express-fileupload": "^1.5.1",
     "hdb": "^0.19.12",
     "rimraf": "^6.0.1",
-    "sqlite": "^5.1.1"
+    "sqlite": "^5.1.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@cap-js/cds-types": "^0.9.0",

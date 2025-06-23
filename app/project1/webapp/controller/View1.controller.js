@@ -35,13 +35,44 @@ sap.ui.define([
       this.selectedFiles = files;
       console.log(this.selectedFiles);
     },
-
+    onFileChange1: function (oEvent) {
+      const files1 = oEvent.getParameter("files");
+      this.selectedFiles1 = files1;
+      console.log(this.selectedFiles1);
+    },
+    onEnter: async function () {
+      const fileUploader = this.byId("fileUploader1");
+      const files = fileUploader.getFocusDomRef().files;
+    
+      if (this.selectedFiles1.length > 0) {
+        for (let i = 0; i < this.selectedFiles1.length; i++) {
+          const file = this.selectedFiles1[i];
+          const formData = new FormData();
+          formData.append("file", file);    
+          try {
+            const response = await fetch("/excelupload", {
+              method: "POST",
+              body: formData
+            });
+    
+            if (!response.ok) throw new Error("Upload failed");
+    
+            const message = await response.text();
+            fileUploader.clear();
+            console.log("Upload success:", message);
+          } catch (err) {
+            console.error("Upload failed:", err);
+            MessageBox.error("File upload failed.");
+          }
+        }
+      }
+    }  
+    ,
     onSubmit: async function () {
       const Id = this.byId("idInput").getValue();
       const name = this.byId("nameInput").getValue();
       const email = this.byId("emailInput").getValue();
       const phone = this.byId("phoneInput").getValue();
-      const status = this.byId("statusInput").getValue();
       if (!name || !email || !phone || !Id) {
         MessageToast.show("Please fill in all vendor details.");
         return;
@@ -51,8 +82,7 @@ sap.ui.define([
           ID: Id,
           name: name,
           email: email,
-          phone: phone,
-          status: status
+          phone: phone
         };
         const response = await fetch("/odata/v2/vendor/VendorCreation", {
           method: "POST",
@@ -87,7 +117,6 @@ sap.ui.define([
         this.byId("nameInput").setValue("");
         this.byId("emailInput").setValue("");
         this.byId("phoneInput").setValue("");
-        this.byId("statusInput").setValue("");
         this.byId("fileUploader").clear();
 
       } catch (err) {
@@ -100,7 +129,7 @@ sap.ui.define([
       const oBinding = oTable.getBinding("items");
       const idVal = this.byId("vendorIdFilter").getValue();
       const nameVal = this.byId("vendorNameFilter").getValue();
-      const statusVal = this.byId("statusFilter").getValue();
+      const statusVal= this.byId("statusFilter").getValue();
       const filters = [];
       if (idVal) {
         filters.push(new sap.ui.model.Filter("ID", sap.ui.model.FilterOperator.Contains, idVal));

@@ -19,3 +19,12 @@ GET http://localhost:4004/odata/v4/vendor/Vendors(guid'1234567')/pdfs
 
 ###
 GET http://localhost:4004/odata/v2/vendor/download
+
+###
+POST http://the-hackett-group-d-b-a-answerthink--inc--at-developmen3a1acfaf.cfapps.us10.hana.ondemand.com/updateApproverComments1 
+Content-Type: application/json
+
+{
+  "vendorID": "00001",
+  "Status": "Approval1 Done"
+}

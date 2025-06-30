@@ -151,7 +151,19 @@ async function startBPAWorkflow({ name, email, id, phone, status }) {
 } catch (e) {
     console.error(e);
 };
-
+  // await bpaService.send('POST', '/workflow/rest/v1/workflow-instances', {
+  //   definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
+  //   context: {
+  //     _name: name,
+  //     email,
+  //     id,
+  //     phone,
+  //     status,
+  //     pdfs: fileZipLink,
+  //     files: downloadLinks
+  //   }
+  // });
+}
 
 
 module.exports = async (srv) => {

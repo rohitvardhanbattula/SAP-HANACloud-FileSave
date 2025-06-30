@@ -7,8 +7,7 @@ service VendorService {
   action   VendorCreation(ID : String,
                           name : String,
                           email : String,
-                          phone : String,
-                          status : String)                     returns String;
+                          phone : String)                     returns String;
 
   action   uploadPDF(vendorID : String)                          returns String;
 

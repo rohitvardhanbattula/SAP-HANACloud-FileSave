@@ -114,7 +114,7 @@ app.post('/updateApproverComments2', async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
-
+const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 async function startBPAWorkflow({ name, email, id, phone, status }) {
   const files = await SELECT.from('my.vendor.VendorPDFs')
     .columns('ID', 'fileName')
@@ -128,41 +128,31 @@ async function startBPAWorkflow({ name, email, id, phone, status }) {
     link: `${host}/downloadFile/${file.ID}`
   }));
 
-  console.log(downloadLinks);
-  const payload = {
-    definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
-    context: {
-      _name: name,
-      email,
-      id,
-      phone,
-      status,
-      pdfs: fileZipLink,
-      files: downloadLinks
-    }
-  };
+  try {
+    return await executeHttpRequest(
+        {
+            destinationName: 'spa_process_destination'
+        }, {
+            method: 'POST',
+            url: "/",
+            data: {
+              definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
+              context: {
+                _name: name,
+                email,
+                id,
+                phone,
+                status,
+                pdfs: fileZipLink,
+                files: downloadLinks
+              }
+        } 
+      });
+} catch (e) {
+    console.error(e);
+};
 
-  const clientId = "sb-ec4f4f47-97ac-4c93-84c8-4d7ff979b6ea!b74367|xsuaa!b49390";
-  const clientSecret = "8f5b2eb1-51ef-47a2-aa05-ce648e268f9c$hsvvplXdPJAhpvL0mpD7yOHoUR60BApUYvnKqpsWsIY=";
 
-  const tokenResp = await axios.post(
-    "https://at-development-hgv7q18y.authentication.us10.hana.ondemand.com/oauth/token",
-    new URLSearchParams({
-      grant_type: "client_credentials",
-      client_id: clientId,
-      client_secret: clientSecret
-    }),
-    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-  );
-
-  const accessToken = tokenResp.data.access_token;
-  await axios.post("https://spa-api-gateway-bpi-us-prod.cfapps.us10.hana.ondemand.com/workflow/rest/v1/workflow-instances", payload, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json"
-    }
-  });
-}
 
 module.exports = async (srv) => {
   srv.on('VendorCreation', async (req) => {

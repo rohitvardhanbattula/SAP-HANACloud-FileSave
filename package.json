@@ -9,7 +9,7 @@
     "@cap-js-community/odata-v2-adapter": "^1.14.1",
     "@cap-js/hana": "^1.9.1",
     "@sap-cloud-sdk/generator": "^3.26.0",
-    "@sap-cloud-sdk/http-client": "^3.26.0",
+    "@sap-cloud-sdk/http-client": "^3.26.4",
     "@sap-cloud-sdk/odata-v2": "^3.26.0",
     "@sap-cloud-sdk/resilience": "^3.26.0",
     "@sap/cds": "^8",
@@ -48,10 +48,10 @@
       "index": true
     },
     "requires": {
-      "bpa_destination": {
-        "kind": "rest",
+      "spa_process_destination": {
+        "kind": "destination",
         "credentials": {
-          "destination": "vendorcapbpa"
+          "destination": "spa_process_destination"
         }
       },
       "db": {

@@ -35,15 +35,17 @@ app.get('/downloadZip/:vendorID', async (req, res) => {
 
 app.get('/downloadFile/:fileID', async (req, res) => {
   const { fileID } = req.params;
-  const file = await SELECT.one.from('my.vendor.VendorPDFs').where({ ID: fileID });
 
+  const file = await SELECT.one.from('my.vendor.VendorPDFs').where({ ID: fileID });
   if (!file) return res.status(404).send("File not found");
 
   const buffer = Buffer.from(file.content, 'base64');
-  res.setHeader('Content-Disposition', `attachment; filename="${file.fileName}"`);
+
+  res.setHeader('Content-Disposition', `inline; filename="${file.fileName}"`);
   res.setHeader('Content-Type', file.mimeType);
   res.send(buffer);
 });
+
 
 app.post('/uploadPDF', async (req, res) => {
   try {
@@ -121,36 +123,49 @@ async function startBPAWorkflow({ name, email, id, phone, status }) {
     .where({ vendor_ID: id });
 
   const host = 'https://the-hackett-group-d-b-a-answerthink--inc--at-developmen3a1acfaf.cfapps.us10.hana.ondemand.com';
-  const fileZipLink = `${host}/downloadZip/${id}`;
 
-  const downloadLinks = files.map(file => ({
-    name: file.fileName,
-    link: `${host}/downloadFile/${file.ID}`
-  }));
+  const fileLinks = files.map(file => `${host}/downloadFile/${file.ID}`);
+  const fileZipLink = '${host}/downloadZip/${id}';
+  // Ensure exactly 6 attachments are passed, fill missing with null
+  const [attachment1, attachment2, attachment3, attachment4, attachment5, attachment6] = [
+    fileLinks[0] || null,
+    fileLinks[1] || null,
+    fileLinks[2] || null,
+    fileLinks[3] || null,
+    fileLinks[4] || null,
+    fileLinks[5] || null,
+  ];
 
   try {
     return await executeHttpRequest(
-        {
-            destinationName: 'spa_process_destination'
-        }, {
-            method: 'POST',
-            url: "/",
-            data: {
-              definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
-              context: {
-                _name: name,
-                email,
-                id,
-                phone,
-                status,
-                pdfs: fileZipLink,
-                files: downloadLinks
-              }
-        } 
-      });
-} catch (e) {
-    console.error(e);
-};
+      { destinationName: 'spa_process_destination' },
+      {
+        method: 'POST',
+        url: "/",
+        data: {
+          definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
+          context: {
+            _name: name,
+            email,
+            id,
+            phone,
+            status,
+            attachment1,
+            attachment2,
+            attachment3,
+            attachment4,
+            attachment5,
+            attachment6,
+            pdfs: fileZipLink
+          }
+        }
+      }
+    );
+  } catch (e) {
+    console.error("❌ BPA Trigger Failed:", e);
+  }
+}
+
   // await bpaService.send('POST', '/workflow/rest/v1/workflow-instances', {
   //   definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
   //   context: {
@@ -163,7 +178,7 @@ async function startBPAWorkflow({ name, email, id, phone, status }) {
   //     files: downloadLinks
   //   }
   // });
-}
+
 
 
 module.exports = async (srv) => {

@@ -11,7 +11,7 @@ modules:
       - name: pdfsave-db
       - name: pdfsave-auth
     provides:
-      - name: srv-api
+      - name: pdfsave-srv-api
         properties:
           srv-url: ${default-url}
     parameters:
@@ -37,7 +37,7 @@ modules:
         parameters:
           service-key:
             name: pdfsave-html5-repo-host-key
-      - name: srv-api
+      - name: pdfsave-srv-api 
       - name: pdfsave-destination
         parameters:
           content-target: true
@@ -99,7 +99,7 @@ resources:
                 Name: pdfsave-srv-api
                 ProxyType: Internet
                 Type: HTTP
-                URL: ~{srv-api/srv-url}
+                URL: ~{pdfsave-srv-api/srv-url}
               - Authentication: NoAuthentication
                 Name: ui5
                 ProxyType: Internet
@@ -109,11 +109,11 @@ resources:
       service: destination
       service-plan: lite
     requires:
-      - name: srv-api
+      - name: pdfsave-srv-api
         group: destinations
         properties:
           forwardAuthToken: true
-          name: srv-api
+          name: pdfsave-srv-api
           url: ~{srv-url}
   - name: pdfsave-db
     type: com.sap.xs.hdi-container

@@ -23,8 +23,9 @@
     {
       "source": "^/?odata/(.*)$",
       "target": "/odata/$1",
-      "destination": "srv-api",
-      "csrfProtection": true
+      "destination": "pdfsave-srv-api",
+      "csrfProtection": true,
+      "authenticationType": "xsuaa"
     }
   ]
 }

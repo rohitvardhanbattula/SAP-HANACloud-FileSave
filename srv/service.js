@@ -46,6 +46,7 @@ app.get('/downloadFile/:fileID', async (req, res) => {
   res.send(buffer);
 });
 
+const uploadTimers = {}; // Map vendorID -> setTimeout reference
 
 app.post('/uploadPDF', async (req, res) => {
   try {
@@ -65,23 +66,39 @@ app.post('/uploadPDF', async (req, res) => {
       vendor_ID: vendorID
     });
 
-    const [vendor] = await SELECT.from('my.vendor.Vendors').where({ ID: vendorID });
-    if (!vendor) return res.status(400).send("Vendor not found");
+    // Reset any existing timer for this vendor
+    if (uploadTimers[vendorID]) {
+      clearTimeout(uploadTimers[vendorID]);
+    }
 
-    await startBPAWorkflow({
-      name: vendor.name,
-      email: vendor.email,
-      id: vendorID,
-      phone: vendor.phone,
-      status: vendor.status
-    });
+    // Set new 10s timer for BPA trigger
+    uploadTimers[vendorID] = setTimeout(async () => {
+      try {
+        const [vendor] = await SELECT.from('my.vendor.Vendors').where({ ID: vendorID });
+        if (!vendor) return console.error("Vendor not found for BPA");
 
-    res.send("File uploaded and workflow triggered successfully");
+        await startBPAWorkflow({
+          name: vendor.name,
+          email: vendor.email,
+          id: vendorID,
+          phone: vendor.phone,
+          status: vendor.status
+        });
+
+        console.log(`✅ BPA triggered for vendor ${vendorID}`);
+        delete uploadTimers[vendorID]; // Cleanup
+      } catch (err) {
+        console.error(`❌ Failed to trigger BPA for vendor ${vendorID}:`, err);
+      }
+    }, 10000); // 10 seconds
+
+    res.send("File uploaded successfully. BPA will trigger in 10 seconds if no more uploads.");
   } catch (err) {
-    console.error("Upload or BPA trigger failed:", err);
+    console.error("Upload or BPA setup failed:", err);
     res.status(500).send("Something went wrong");
   }
 });
+  
 
 app.post('/updateApproverComments1', async (req, res) => {
   try {
@@ -118,6 +135,7 @@ app.post('/updateApproverComments2', async (req, res) => {
 });
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 async function startBPAWorkflow({ name, email, id, phone, status }) {
+  
   const files = await SELECT.from('my.vendor.VendorPDFs')
     .columns('ID', 'fileName')
     .where({ vendor_ID: id });
@@ -125,15 +143,15 @@ async function startBPAWorkflow({ name, email, id, phone, status }) {
   const host = 'https://the-hackett-group-d-b-a-answerthink--inc--at-developmen3a1acfaf.cfapps.us10.hana.ondemand.com';
 
   const fileLinks = files.map(file => `${host}/downloadFile/${file.ID}`);
-  const fileZipLink = '${host}/downloadZip/${id}';
-  // Ensure exactly 6 attachments are passed, fill missing with null
+  const fileZipLink = `${host}/downloadZip/${id}`;
+  console.log(fileZipLink);
   const [attachment1, attachment2, attachment3, attachment4, attachment5, attachment6] = [
-    fileLinks[0] || null,
-    fileLinks[1] || null,
-    fileLinks[2] || null,
-    fileLinks[3] || null,
-    fileLinks[4] || null,
-    fileLinks[5] || null,
+    fileLinks[0] || "",
+    fileLinks[1] || "",
+    fileLinks[2] || "",
+    fileLinks[3] || "",
+    fileLinks[4] || "",
+    fileLinks[5] || "",
   ];
 
   try {

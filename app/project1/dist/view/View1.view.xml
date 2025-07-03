@@ -57,8 +57,6 @@
     <Column width="10em" hAlign="Center"><Text text="Email"/></Column>
     <Column width="10em" hAlign="Center"><Text text="Phone"/></Column>
     <Column width="8em" hAlign="Center"><Text text="Status"/></Column>
-    <Column width="12em" hAlign="Center"><Text text="Approver Comments 1"/></Column>
-    <Column width="12em" hAlign="Center"><Text text="Approver Comments 2"/></Column>
   </columns>
 
   <items>

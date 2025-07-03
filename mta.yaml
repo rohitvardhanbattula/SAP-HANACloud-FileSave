@@ -11,14 +11,18 @@ modules:
       - name: pdfsave-db
       - name: pdfsave-auth
     provides:
-      - name: pdfsave-srv-api
+      - name: srv-api
         properties:
           srv-url: ${default-url}
     parameters:
       buildpack: nodejs_buildpack
-      instances: 1
+      readiness-health-check-http-endpoint: /health
+      readiness-health-check-type: http
     build-parameters:
-      builder: npm-ci
+      builder: npm
+      ignore:
+        - ./node_modules
+        - .env
   - name: pdfsave-db-deployer
     type: hdb
     path: gen/db
@@ -37,7 +41,7 @@ modules:
         parameters:
           service-key:
             name: pdfsave-html5-repo-host-key
-      - name: pdfsave-srv-api 
+      - name: srv-api
       - name: pdfsave-destination
         parameters:
           content-target: true
@@ -49,8 +53,8 @@ modules:
               ServiceInstanceName: pdfsave-html5-repo-host
               ServiceKeyName: pdfsave-html5-repo-host-key
               sap.cloud.service: pdfsave.service
-            - Authentication: OAuth2UserTokenExchange
-              Name: pdfsave-auth
+            - Name: pdfsave-auth
+              Authentication: OAuth2UserTokenExchange
               ServiceInstanceName: pdfsave-auth
               ServiceKeyName: pdfsave-auth-key
               sap.cloud.service: pdfsave.service
@@ -65,6 +69,8 @@ modules:
         parameters:
           content-target: true
     build-parameters:
+      ignore:
+        - "node_modules/"
       build-result: app/
       requires:
         - artifacts:
@@ -80,7 +86,6 @@ modules:
       commands:
         - npm install
         - npm run build:cf
-        - npm ci
         - npm run build
       supported-platforms:
         []
@@ -93,27 +98,28 @@ resources:
         init_data:
           instance:
             destinations:
-              - Authentication: NoAuthentication
-                HTML5.DynamicDestination: true
-                HTML5.ForwardAuthToken: true
-                Name: pdfsave-srv-api
-                ProxyType: Internet
-                Type: HTTP
-                URL: ~{pdfsave-srv-api/srv-url}
-              - Authentication: NoAuthentication
-                Name: ui5
+              - Name: ui5
+                Authentication: NoAuthentication
+                
                 ProxyType: Internet
                 Type: HTTP
                 URL: https://ui5.sap.com
+              - Name: srv-api
+                URL: ~{srv-api/srv-url}
+                Authentication: NoAuthentication
+                Type: HTTP
+                ProxyType: Internet
+                HTML5.ForwardAuthToken: true
+                HTML5.DynamicDestination: true
             existing_destinations_policy: update
       service: destination
       service-plan: lite
     requires:
-      - name: pdfsave-srv-api
+      - name: srv-api
         group: destinations
         properties:
           forwardAuthToken: true
-          name: pdfsave-srv-api
+          name: srv-api
           url: ~{srv-url}
   - name: pdfsave-db
     type: com.sap.xs.hdi-container

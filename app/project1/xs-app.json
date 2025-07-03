@@ -21,11 +21,10 @@
       "authenticationType": "xsuaa"
     },
     {
-      "source": "^/?odata/(.*)$",
-      "target": "/odata/$1",
-      "destination": "pdfsave-srv-api",
-      "csrfProtection": true,
-      "authenticationType": "xsuaa"
+      "source": "^/odata/v4/vendor/(.*)$",
+    "target": "/odata/v4/vendor/$1",
+      "destination": "srv-api",
+      "csrfProtection": true
     }
   ]
 }

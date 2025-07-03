@@ -6,10 +6,10 @@ entity Vendors {
       email             : String;
       phone             : String;
       status            : String;
-      approvercomments1 : String;
-      approvercomments2 : String;
-      pdfs              : Association to many VendorPDFs
-                            on pdfs.vendor = $self;
+      uploadTime        : Timestamp;
+      bpaTriggered      : Boolean default false;
+      pdfs              : Association to many VendorPDFs on pdfs.vendor = $self;
+      approvals         : Association to many VendorApprovals on approvals.vendor = $self;
 }
 
 entity VendorPDFs {
@@ -19,6 +19,23 @@ entity VendorPDFs {
       content   : LargeString;
       createdAt : Timestamp;
       vendor_ID : String;
-      vendor    : Association to Vendors
-                    on vendor.ID = vendor_ID;
+      vendor    : Association to Vendors on vendor.ID = vendor_ID;
+}
+
+entity VendorApprovals {
+  key ID              : UUID;
+      vendor_ID       : String;
+      vendor          : Association to Vendors on vendor.ID = vendor_ID;
+      level           : String;
+      approver_email  : String;
+      approver_name   : String;
+      status          : String;
+      comments        : String;
+      updatedAt       : Timestamp;
+}
+
+entity Approvers {
+  key ID        : UUID;
+  level         : String; 
+  approver_email  : String(100);
 }

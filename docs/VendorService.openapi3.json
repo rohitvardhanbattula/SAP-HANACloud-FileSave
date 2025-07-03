@@ -108,10 +108,6 @@
                   "phone": {
                     "type": "string",
                     "nullable": true
-                  },
-                  "status": {
-                    "type": "string",
-                    "nullable": true
                   }
                 }
               }
@@ -427,7 +423,9 @@
                   "phone",
                   "status",
                   "approvercomments1",
-                  "approvercomments2"
+                  "approvercomments2",
+                  "uploadTime",
+                  "bpaTriggered"
                 ]
               }
             }
@@ -518,7 +516,11 @@
                   "approvercomments1",
                   "approvercomments1 desc",
                   "approvercomments2",
-                  "approvercomments2 desc"
+                  "approvercomments2 desc",
+                  "uploadTime",
+                  "uploadTime desc",
+                  "bpaTriggered",
+                  "bpaTriggered desc"
                 ]
               }
             }
@@ -540,7 +542,9 @@
                   "phone",
                   "status",
                   "approvercomments1",
-                  "approvercomments2"
+                  "approvercomments2",
+                  "uploadTime",
+                  "bpaTriggered"
                 ]
               }
             }
@@ -659,7 +663,9 @@
                   "phone",
                   "status",
                   "approvercomments1",
-                  "approvercomments2"
+                  "approvercomments2",
+                  "uploadTime",
+                  "bpaTriggered"
                 ]
               }
             }
@@ -1333,6 +1339,17 @@
             "type": "string",
             "nullable": true
           },
+          "uploadTime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "bpaTriggered": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
+          },
           "pdfs": {
             "type": "array",
             "items": {
@@ -1374,6 +1391,17 @@
           "approvercomments2": {
             "type": "string",
             "nullable": true
+          },
+          "uploadTime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "bpaTriggered": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
           }
         },
         "required": [
@@ -1407,6 +1435,17 @@
           "approvercomments2": {
             "type": "string",
             "nullable": true
+          },
+          "uploadTime": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2017-04-13T15:51:04.0000000Z",
+            "nullable": true
+          },
+          "bpaTriggered": {
+            "type": "boolean",
+            "nullable": true,
+            "default": false
           }
         }
       },

@@ -1,9 +1,13 @@
+// Updated CAP service logic with approval flow inserts/updates and auto-trigger for next levels
+
 const cds = require('@sap/cds');
 const fileUpload = require('express-fileupload');
 const XLSX = require("xlsx");
 const axios = require('axios');
 const JSZip = require("jszip");
 const app = cds.app;
+const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
+const { data } = require('hdb/lib/protocol');
 
 app.use(require("express").json());
 app.use(fileUpload());
@@ -15,10 +19,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// File download endpoints
 app.get('/downloadZip/:vendorID', async (req, res) => {
   const { vendorID } = req.params;
   const files = await SELECT.from('my.vendor.VendorPDFs').where({ vendor_ID: vendorID });
-
   if (!files || files.length === 0) return res.status(404).send("No files found");
 
   const zip = new JSZip();
@@ -35,200 +39,186 @@ app.get('/downloadZip/:vendorID', async (req, res) => {
 
 app.get('/downloadFile/:fileID', async (req, res) => {
   const { fileID } = req.params;
-
   const file = await SELECT.one.from('my.vendor.VendorPDFs').where({ ID: fileID });
   if (!file) return res.status(404).send("File not found");
 
   const buffer = Buffer.from(file.content, 'base64');
-
   res.setHeader('Content-Disposition', `inline; filename="${file.fileName}"`);
   res.setHeader('Content-Type', file.mimeType);
   res.send(buffer);
 });
 
-const uploadTimers = {}; // Map vendorID -> setTimeout reference
-
+// File upload + BPA delay trigger
+const uploadTimers = {};
 app.post('/uploadPDF', async (req, res) => {
   try {
     const vendorID = req.body.vendorID;
-    if (!vendorID) return res.status(400).send("Missing vendorID");
-    if (!req.files || !req.files.file) return res.status(400).send("No file uploaded");
+    if (!vendorID || !req.files || !req.files.file) return res.status(400).send("Missing vendorID or file");
 
     const uploadedFile = req.files.file;
     const base64Content = uploadedFile.data.toString('base64');
-
     await INSERT.into('my.vendor.VendorPDFs').entries({
-      ID: cds.utils.uuid(),
-      fileName: uploadedFile.name,
-      mimeType: uploadedFile.mimetype,
-      content: base64Content,
-      createdAt: new Date(),
-      vendor_ID: vendorID
+      ID: cds.utils.uuid(), fileName: uploadedFile.name,
+      mimeType: uploadedFile.mimetype, content: base64Content,
+      createdAt: new Date(), vendor_ID: vendorID
     });
 
-    // Reset any existing timer for this vendor
-    if (uploadTimers[vendorID]) {
-      clearTimeout(uploadTimers[vendorID]);
-    }
+    await UPDATE('my.vendor.Vendors').set({ uploadTime: new Date() }).where({ ID: vendorID });
 
-    // Set new 10s timer for BPA trigger
+    if (uploadTimers[vendorID]) clearTimeout(uploadTimers[vendorID]);
     uploadTimers[vendorID] = setTimeout(async () => {
       try {
         const [vendor] = await SELECT.from('my.vendor.Vendors').where({ ID: vendorID });
         if (!vendor) return console.error("Vendor not found for BPA");
 
-        await startBPAWorkflow({
-          name: vendor.name,
-          email: vendor.email,
-          id: vendorID,
-          phone: vendor.phone,
-          status: vendor.status
-        });
+        await triggerNextApprover(vendorID);
 
+        await UPDATE('my.vendor.Vendors').set({ bpaTriggered: true }).where({ ID: vendorID });
         console.log(`✅ BPA triggered for vendor ${vendorID}`);
-        delete uploadTimers[vendorID]; // Cleanup
+        delete uploadTimers[vendorID];
       } catch (err) {
-        console.error(`❌ Failed to trigger BPA for vendor ${vendorID}:`, err);
+        console.error(`❌ BPA trigger failed for vendor ${vendorID}:`, err);
       }
-    }, 10000); // 10 seconds
+    }, 10000); 
 
-    res.send("File uploaded successfully. BPA will trigger in 10 seconds if no more uploads.");
+    res.send("File uploaded successfully. BPA will trigger in 1 hour if no more uploads.");
   } catch (err) {
-    console.error("Upload or BPA setup failed:", err);
-    res.status(500).send("Something went wrong");
-  }
-});
-  
-
-app.post('/updateApproverComments1', async (req, res) => {
-  try {
-    const { vendorID, Status, approvercomments1 } = req.body;
-    if (!vendorID || !Status) return res.status(400).send("Missing vendorID or Status");
-
-    const result = await UPDATE('my.vendor.Vendors')
-      .set({ status: Status, approvercomments1 })
-      .where({ ID: vendorID });
-
-    if (result === 0) return res.status(404).send(`Vendor with ID ${vendorID} not found`);
-    res.send({ message: "Status updated", vendorID });
-  } catch (err) {
-    console.error("❌ Error in /updateApproverComments1:", err);
-    res.status(500).send("Internal Server Error");
+    console.error("Upload error:", err);
+    res.status(500).send("Upload failed");
   }
 });
 
-app.post('/updateApproverComments2', async (req, res) => {
-  try {
-    const { vendorID, Status, approvercomments2 } = req.body;
-    if (!vendorID || !Status) return res.status(400).send("Missing vendorID or Status");
-
-    const result = await UPDATE('my.vendor.Vendors')
-      .set({ status: Status, approvercomments2 })
-      .where({ ID: vendorID });
-
-    if (result === 0) return res.status(404).send(`Vendor with ID ${vendorID} not found`);
-    res.send({ message: "Status updated", vendorID });
-  } catch (err) {
-    console.error("❌ Error in /updateApproverComments2:", err);
-    res.status(500).send("Internal Server Error");
-  }
-});
-const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
-async function startBPAWorkflow({ name, email, id, phone, status }) {
-  
-  const files = await SELECT.from('my.vendor.VendorPDFs')
-    .columns('ID', 'fileName')
-    .where({ vendor_ID: id });
-
+// BPA Workflow trigger
+async function startBPAWorkflow({ name, email, id, phone, status, approver_email, approver_level }) {
+  const files = await SELECT.from('my.vendor.VendorPDFs').columns('ID', 'fileName').where({ vendor_ID: id });
   const host = 'https://the-hackett-group-d-b-a-answerthink--inc--at-developmen3a1acfaf.cfapps.us10.hana.ondemand.com';
-
   const fileLinks = files.map(file => `${host}/downloadFile/${file.ID}`);
   const fileZipLink = `${host}/downloadZip/${id}`;
-  console.log(fileZipLink);
-  const [attachment1, attachment2, attachment3, attachment4, attachment5, attachment6] = [
-    fileLinks[0] || "",
-    fileLinks[1] || "",
-    fileLinks[2] || "",
-    fileLinks[3] || "",
-    fileLinks[4] || "",
-    fileLinks[5] || "",
-  ];
 
-  try {
-    return await executeHttpRequest(
-      { destinationName: 'spa_process_destination' },
-      {
-        method: 'POST',
-        url: "/",
-        data: {
-          definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
-          context: {
-            _name: name,
-            email,
-            id,
-            phone,
-            status,
-            attachment1,
-            attachment2,
-            attachment3,
-            attachment4,
-            attachment5,
-            attachment6,
-            pdfs: fileZipLink
-          }
+  const [attachment1, attachment2, attachment3, attachment4, attachment5, attachment6] = [
+    fileLinks[0] || "", fileLinks[1] || "", fileLinks[2] || "",
+    fileLinks[3] || "", fileLinks[4] || "", fileLinks[5] || "",
+  ];
+  
+  return await executeHttpRequest(
+    { destinationName: 'spa_process_destination' },
+    {
+      method: 'POST', url: "/",
+      data: {
+        definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
+        headers: {
+          'Content-Type': 'application/json',
+          'x-csrf-token': 'Fetch'
+        },
+        context: {
+          _name: name,
+          email,
+          id,
+          phone,
+          status,
+          attachment1,
+          attachment2,
+          attachment3,
+          attachment4,
+          attachment5,
+          attachment6,
+          pdfs: fileZipLink,
+          approver_level,
+          approver_email
         }
       }
-    );
-  } catch (e) {
-    console.error("❌ BPA Trigger Failed:", e);
+    }
+    
+  );
+  
+}
+
+// Looping BPA trigger
+async function triggerNextApprover(vendorID) {
+  const vendor = await SELECT.one.from('my.vendor.Vendors').where({ ID: vendorID });
+  const approvals = await SELECT.from('my.vendor.VendorApprovals')
+    .where({ vendor_ID: vendorID })
+    .orderBy('level asc');
+
+  for (const approver of approvals) {
+    if (approver.status === 'PENDING') {
+      console.log(`Triggering BPA for level ${approver.level}`);
+      await startBPAWorkflow({
+        name: vendor.name,
+        email: vendor.email,
+        id: vendorID,
+        phone: vendor.phone,
+        status: vendor.status,
+        approver_email: approver.approver_email,
+        approver_level: approver.level
+      });
+      break; // wait for callback
+    }
   }
 }
 
-  // await bpaService.send('POST', '/workflow/rest/v1/workflow-instances', {
-  //   definitionId: "us10.at-development-hgv7q18y.vendorcapapplication1.vendor_CAPM_Process",
-  //   context: {
-  //     _name: name,
-  //     email,
-  //     id,
-  //     phone,
-  //     status,
-  //     pdfs: fileZipLink,
-  //     files: downloadLinks
-  //   }
-  // });
 
+app.post('/bpa-callback', async (req, res) => {
+  try {
+    const { vendorID, level, status, comments, approver_email } = req.body;
+    if (!vendorID || !level || !status || !approver_email) return res.status(400).send("Missing fields");
 
+    await UPDATE('my.vendor.VendorApprovals')
+      .set({ status, comments, updatedAt: new Date() })
+      .where({ vendor_ID: vendorID, level, approver_email });
+
+    if (status === 'REJECTED') {
+      await UPDATE('my.vendor.Vendors').set({ status: 'REJECTED' }).where({ ID: vendorID });
+      return res.send({ message: "Approval rejected." });
+    }
+    const nextLevel = (parseInt(level, 10) + 1).toString();
+    const next = await SELECT.one.from('my.vendor.VendorApprovals')
+      .where({ vendor_ID: vendorID, level: nextLevel });
+    console.log("next", next);
+    if (next) {
+      await triggerNextApprover(vendorID);
+    } else {
+      await UPDATE('my.vendor.Vendors').set({ status: 'FINAL_APPROVED' }).where({ ID: vendorID });
+      return res.send({ message: "All levels approved." });
+    }
+
+    res.send({ message: "Approval recorded. Next level in progress." });
+  } catch (err) {
+    console.error("❌ BPA callback failed:", err);
+    res.status(500).send("Callback failed");
+  }
+});
 
 module.exports = async (srv) => {
   srv.on('VendorCreation', async (req) => {
     const { ID, name, email, phone } = req.data;
-    if (!name || !email || !phone || !ID) return req.error(400, 'Vendor details are incomplete');
-
+    if (!name || !email || !phone || !ID) return req.error(400, 'Incomplete data');
+  
     const status = 'OPEN';
-    const approvercomments1 = 'PENDING';
-    const approvercomments2 = 'PENDING';
-
-    return await INSERT.into('my.vendor.Vendors').entries({
-      ID, name, email, phone, status, approvercomments1, approvercomments2
+  
+    const vendorInsert = await INSERT.into('my.vendor.Vendors').entries({
+      ID, name, email, phone, status, bpaTriggered: false
     });
-  });
-
-  srv.on('getIds', async (req) => {
-    return await SELECT.from('my.vendor.Vendors').columns('ID');
-  });
-
-  srv.on('getdetails', async (req) => {
-    const { name } = req.data;
-    const files = await SELECT.from('my.vendor.Vendors')
-      .columns('status', 'approvercomments1', 'approvercomments2')
-      .where({ name });
-
-    return files.map(file => ({
-      status: file.status,
-      approvercomments1: file.approvercomments1,
-      approvercomments2: file.approvercomments2
+  
+    const approversList = await SELECT.from('my.vendor.Approvers').orderBy('level');
+  
+    const approvalEntries = approversList.map(approver => ({
+      ID: cds.utils.uuid(),
+      vendor_ID: ID,
+      level: approver.level,
+      approver_email: approver.approver_email,
+      approver_name: `Approver ${approver.level}`,
+      status: 'PENDING',
+      updatedAt: new Date().toISOString()
     }));
+  
+    if (approvalEntries.length) {
+      await INSERT.into('my.vendor.VendorApprovals').entries(approvalEntries);
+    }
+  
+    return vendorInsert;
   });
+  
 
   srv.on('download', async (req) => {
     const { vendor_ID } = req.data;
@@ -238,7 +228,7 @@ module.exports = async (srv) => {
       .columns('ID', 'fileName', 'content', 'mimeType', 'vendor_ID')
       .where({ vendor_ID });
 
-    if (!files || files.length === 0) return req._.res.status(404).json({ message: 'No files found for this vendor' });
+    if (!files || files.length === 0) return req._.res.status(404).json({ message: 'No files found' });
 
     return files.map(file => ({
       fileName: file.fileName,

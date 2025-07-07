@@ -51,5 +51,37 @@
               class="sapUiSmallMarginTop sapMText sapUiContentPadding"/>
       </HBox>
     </VBox>
+
+    <Table
+  id="ApproverTable"
+  
+  items="{VendModel1>/}"
+  inset="false"
+  alternateRowColors="true"
+  class="leftAlignedTable"
+  fixedLayout="true"           
+  width="100%"                
+  busyIndicatorDelay="0"
+  
+>
+  <columns>
+    <Column width="8em" hAlign="Center"><Text text="Approver Level"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Approver Email"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Approver Status"/></Column>
+    <Column width="10em" hAlign="Center"><Text text="Approver Comments"/></Column>
+  </columns>
+
+  <items>
+    <ColumnListItem>
+      <cells>
+        <Text text="{VendModel1>level}" wrapping="false"/>
+        <Text text="{VendModel1>approver_email}" wrapping="false"/>
+        <Text text="{VendModel1>status}" wrapping="false"/>
+        <Text text="{VendModel1>comments}" wrapping="false"/>
+      </cells>
+    </ColumnListItem>
+  </items>
+</Table>
+
   </Page>
 </mvc:View>

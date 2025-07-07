@@ -47,49 +47,20 @@ sap.ui.define([
       const files = oEvent.getParameter("files");
       this.selectedFiles = files;
       console.log(this.selectedFiles);
-    },
-    onFileChange1: function (oEvent) {
-      const files1 = oEvent.getParameter("files");
-      this.selectedFiles1 = files1;
-      console.log(this.selectedFiles1);
-    },
-    onEnter: async function () {
-      const fileUploader = this.byId("fileUploader1");
-      const files = fileUploader.getFocusDomRef().files;
-    
-      if (this.selectedFiles1.length > 0) {
-        for (let i = 0; i < this.selectedFiles1.length; i++) {
-          const file = this.selectedFiles1[i];
-          const formData = new FormData();
-          formData.append("file", file);    
-          try {
-            const response = await fetch("/excelupload", {
-              method: "POST",
-              body: formData
-            });
-    
-            if (!response.ok) throw new Error("Upload failed");
-    
-            const message = await response.text();
-            fileUploader.clear();
-            console.log("Upload success:", message);
-          } catch (err) {
-            console.error("Upload failed:", err);
-            MessageBox.error("File upload failed.");
-          }
-        }
-      }
-    }  
+    }
     ,
     onSubmit: async function () {
       const Id = this.byId("idInput").getValue();
       const name = this.byId("nameInput").getValue();
       const email = this.byId("emailInput").getValue();
       const phone = this.byId("phoneInput").getValue();
-      if (!name || !email || !phone || !Id) {
-        MessageToast.show("Please fill in all vendor details.");
+    
+      // Check for required fields and file
+      if (!name || !email || !phone || !Id || !this.selectedFiles || this.selectedFiles.length === 0) {
+        MessageToast.show("Please fill in all vendor details and upload at least one file.");
         return;
       }
+    
       try {
         const vendorPayload = {
           ID: Id,
@@ -97,6 +68,7 @@ sap.ui.define([
           email: email,
           phone: phone
         };
+    
         const response = await fetch("/odata/v2/vendor/VendorCreation", {
           method: "POST",
           headers: {
@@ -104,34 +76,42 @@ sap.ui.define([
           },
           body: JSON.stringify(vendorPayload)
         });
+    
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error("Vendor creation failed: " + errorText);
         }
+    
         const vendorID = Id;
-        if (this.selectedFiles.length > 0) {
-          for (let i = 0; i < this.selectedFiles.length; i++) {
-            const file = this.selectedFiles[i];
-            const formData = new FormData();
-            formData.append("file", file);
-            formData.append("vendorID", vendorID);
-            const response = await fetch("/uploadPDF", {
-              method: "POST",
-              body: formData
-            });
-            if (!response.ok) {
-              throw new Error(`Failed to upload file: ${file.name}`);
-            }
+    
+        // Upload files
+        for (let i = 0; i < this.selectedFiles.length; i++) {
+          const file = this.selectedFiles[i];
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("vendorID", vendorID);
+    
+          const uploadResponse = await fetch("/uploadPDF", {
+            method: "POST",
+            body: formData
+          });
+    
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload file: ${file.name}`);
           }
         }
-        MessageToast.show("Vendor and files uploaded successfully.");
+    
+        MessageToast.show("Vendor and file uploaded successfully.");
         this.onInit();
+    
+        // Clear fields
         this.byId("idInput").setValue("");
         this.byId("nameInput").setValue("");
         this.byId("emailInput").setValue("");
         this.byId("phoneInput").setValue("");
         this.byId("fileUploader").clear();
-
+        this.selectedFiles = null;
+    
       } catch (err) {
         console.error("Error:", err);
         MessageToast.show("Error occurred during vendor or file upload.");

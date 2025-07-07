@@ -46,7 +46,7 @@
   items="{VendModel>/}"
   inset="false"
   alternateRowColors="true"
-  class="sapUiResponsiveMargin"
+  class="leftAlignedTable"
   fixedLayout="true"           
   width="100%"                
   busyIndicatorDelay="0"

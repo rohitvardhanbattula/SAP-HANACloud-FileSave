@@ -14,12 +14,41 @@ sap.ui.define([
           } else {
             console.error("Route 'View2' not found! Check manifest.json for routing config.");
           }
+         
       },
-  
+      _approvers: function (vendorId) {
+        
+        
+      
+        fetch(`/odata/v4/vendor/VendorApprovals?vendor_ID=${vendorId}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" }
+        })
+          .then(res => res.json())
+          .then(data => {
+            const sorted = data.value.sort((a, b) => a.level - b.level);
+      
+            
+            const oApprovalModel = new JSONModel(sorted);
+            this.getView().setModel(oApprovalModel, "VendModel1");
+      
+            this.byId("busyIndicator").setVisible(false);
+          })
+          .catch(err => {
+            console.error("Approvals fetch error:", err);
+            MessageToast.show("Failed to fetch vendor approval data.");
+            this.byId("busyIndicator").setVisible(false);
+          });
+      }
+      
+,      
       _onRouteMatched: function (oEvent) {
         const vendorId = oEvent.getParameter("arguments").vendor_Id;
+      
         this.byId("vendorIdText").setText("Vendor ID: " + vendorId);
         this.byId("busyIndicator").setVisible(true);
+      
+        // Attachments fetch
         this.getView().setModel(new JSONModel({ files: [] }), "attachmentModel");
         fetch(`/odata/v4/vendor/download?vendor_ID=${vendorId}`, {
           method: "GET",
@@ -27,7 +56,6 @@ sap.ui.define([
             "Content-Type": "application/json"
           }
         })
-        
           .then(res => res.json())
           .then(data => {
             const oModel = new JSONModel({ files: data.value });
@@ -39,7 +67,17 @@ sap.ui.define([
             MessageToast.show("Failed to fetch files.");
             this.byId("busyIndicator").setVisible(false);
           });
-      },
+      
+       
+        this._approvers(vendorId);
+      
+        
+        clearInterval(this._approverInterval); 
+        this._approverInterval = setInterval(() => {
+          this._approvers(vendorId);
+        }, 10000);
+      }
+      ,
   
       onDownloadPress: function (oEvent) {
         const oContext = oEvent.getSource().getBindingContext("attachmentModel");

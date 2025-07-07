@@ -3,7 +3,6 @@ using {my.vendor as vendor} from '../db/schema';
 service VendorService {
   entity Vendors    as projection on vendor.Vendors;
   entity VendorPDFs as projection on vendor.VendorPDFs;
-
   action   VendorCreation(ID : String,
                           name : String,
                           email : String,
@@ -17,20 +16,11 @@ service VendorService {
     mimeType : String;
   };
 
-  function getdetails(name : String)                               returns array of {
-    status            : String;
-    approvercomments1 : String;
-    approvercomments2 : String;
+  function VendorApprovals(vendor_ID : String)                          returns array of {
+    level : String;
+    approver_email  : String;
+    status : String;
+    comments: String;
   };
 
-  function getIds()                                            returns array of {
-    ID : String;
-  };
-
-  action   updateApproverComments1(ID : String,
-                                   approvercomments1 : String) returns String;
-
-
-  action   updateApproverComments2(ID : String,
-                                   approvercomments2 : String) returns String;
 }

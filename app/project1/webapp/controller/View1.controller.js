@@ -69,7 +69,7 @@ sap.ui.define([
           phone: phone
         };
     
-        const response = await fetch("/odata/v2/vendor/VendorCreation", {
+        const response = await fetch("odata/v2/vendor/VendorCreation", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"

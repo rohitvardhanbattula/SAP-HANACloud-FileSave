@@ -23,7 +23,7 @@ sap.ui.define([
     },
     
     _fetchVendors: function () {
-      fetch("/odata/v4/vendor/Vendors")
+      fetch(`odata/v4/vendor/Vendors`)
         .then(response => response.json())
         .then(data => {
           const oModel = new sap.ui.model.json.JSONModel(data.value);

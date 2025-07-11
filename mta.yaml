@@ -53,8 +53,8 @@ modules:
               ServiceInstanceName: pdfsave-html5-repo-host
               ServiceKeyName: pdfsave-html5-repo-host-key
               sap.cloud.service: pdfsave.service
-            - Name: pdfsave-auth
-              Authentication: OAuth2UserTokenExchange
+            - Authentication: OAuth2UserTokenExchange
+              Name: pdfsave-auth
               ServiceInstanceName: pdfsave-auth
               ServiceKeyName: pdfsave-auth-key
               sap.cloud.service: pdfsave.service

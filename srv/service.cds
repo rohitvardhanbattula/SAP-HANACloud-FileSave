@@ -8,7 +8,6 @@ service VendorService {
                           email : String,
                           phone : String)                     returns String;
 
-  action   uploadPDF(vendorID : String)                          returns String;
 
   function download(vendor_ID : String)                          returns array of {
     fileName : String;

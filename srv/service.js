@@ -3,6 +3,7 @@ const fileUpload = require('express-fileupload');
 const XLSX = require("xlsx");
 const axios = require('axios');
 const JSZip = require("jszip");
+cds.on('bootstrap', (app) => app.use(proxy()));
 const app = cds.app;
 const { executeHttpRequest } = require('@sap-cloud-sdk/http-client');
 
@@ -10,8 +11,9 @@ app.use(require("express").json());
 app.use(fileUpload());
 
 app.use((req, res, next) => {
-  if (req.method === 'GET') {
-    res.set('x-csrf-token', 'Fetch');
+  if (req.method === 'HEAD'&& req.path === '/uploadPDF' && req.headers['x-csrf-token'] === 'Fetch') {
+    res.set('x-csrf-token', 'dummy-csrf-token'); // Set any string as dummy token
+    return res.status(200).end(); // Important: reply to HEAD/GET request
   }
   next();
 });
@@ -146,7 +148,7 @@ async function triggerNextApprover(vendorID) {
     .where({ vendor_ID: vendorID })
     .orderBy('level asc');
 
-    const allPreviousComments = approvals
+  const allPreviousComments = approvals
     .filter(a => a.status !== 'PENDING' && a.comments)
     .map(a => `${a.approver_email} ${new Date(a.updatedAt || new Date()).toLocaleString()} - ${a.comments}`)
     .join("\n");
@@ -203,9 +205,10 @@ app.post('/bpa-callback', async (req, res) => {
   }
 });
 
-module.exports = async (srv) => {
+module.exports = cds.service.impl(async (srv) => {
   // Create vendor + approvals
   srv.on('VendorCreation', async (req) => {
+    console.log(req.data);
     const { ID, name, email, phone } = req.data;
     if (!name || !email || !phone || !ID) return req.error(400, 'Incomplete data');
 
@@ -262,5 +265,7 @@ module.exports = async (srv) => {
       content: file.content,
       mimeType: file.mimeType
     }));
+
   });
-};
+
+});

@@ -31,7 +31,8 @@
     "@cap-js/sqlite": "^1",
     "@sap/cds-dk": "^8.7.1",
     "mbt": "^1.2.29",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "ui5-middleware-simpleproxy": "^3.4.3"
   },
   "scripts": {
     "start": "cds-serve",

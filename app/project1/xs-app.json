@@ -4,7 +4,7 @@
   "routes": [
     {
       "source": "^/uploadPDF$",
-  "target": "/uploadPDF",
+      "target": "/uploadPDF",
   "authenticationType": "none",
   "destination": "srv-api"
     },

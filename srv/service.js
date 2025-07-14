@@ -77,7 +77,6 @@ app.post('/uploadPDF', async (req, res) => {
         await triggerNextApprover(vendorID);
 
         await UPDATE('my.vendor.Vendors').set({ bpaTriggered: true }).where({ ID: vendorID });
-        console.log(`✅ BPA triggered for vendor ${vendorID}`);
         delete uploadTimers[vendorID];
       } catch (err) {
         console.error(`❌ BPA trigger failed for vendor ${vendorID}:`, err);

@@ -109,7 +109,7 @@ sap.ui.define([
           
         
           // Step 2: Upload the file with the token and credentials
-          const uploadResponse = await fetch(`uploadPDF`, {
+          const uploadResponse = await fetch(`${window.location.origin}/uploadPDF`, {
             method: "POST",
             
             body: formData

@@ -207,7 +207,7 @@ app.post('/bpa-callback', async (req, res) => {
 module.exports = cds.service.impl(async (srv) => {
   // Create vendor + approvals
   srv.on('VendorCreation', async (req) => {
-    console.log(req.data);
+    
     const { ID, name, email, phone } = req.data;
     if (!name || !email || !phone || !ID) return req.error(400, 'Incomplete data');
 

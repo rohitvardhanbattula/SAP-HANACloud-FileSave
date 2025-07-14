@@ -31,6 +31,7 @@ entity VendorApprovals {
       approver_name   : String;
       status          : String;
       comments        : String;
+      notes           : String;
       updatedAt       : Timestamp;
 }
 
@@ -38,4 +39,10 @@ entity Approvers {
   key ID        : UUID;
   level         : String; 
   approver_email  : String(100);
+}
+
+entity Rejectors {
+  key ID        : UUID;
+  level         : String; 
+  reject_email  : String(100);
 }

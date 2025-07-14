@@ -102,11 +102,12 @@ async function startBPAWorkflow({ name, email, id, phone, status, approver_email
     fileLinks[3] || "", fileLinks[4] || "", fileLinks[5] || ""
   ];
 
-  console.log("📤 Triggering BPA with:", {
-    name, email, id, phone, status,
-    approver_email, approver_level,
-    prior_comments, attachment1, attachment2,
-  });
+  //console.log("📤 Triggering BPA with:", {
+  //  name, email, id, phone, status,
+  //  approver_email, approver_level,
+  //  prior_comments, attachment1, attachment2,
+  //});
+  console.log("test");
 
   return await executeHttpRequest(
     { destinationName: 'spa_process_destination' },

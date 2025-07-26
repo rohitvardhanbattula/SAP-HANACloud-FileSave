@@ -3,8 +3,9 @@ sap.ui.define([
   "sap/m/MessageToast",
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
-  "sap/ui/model/FilterOperator"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator) {
+  "sap/ui/model/FilterOperator",
+  "sap/m/BusyDialog"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, BusyDialog) {
   "use strict";
 
   return Controller.extend("project1.controller.View1", {
@@ -12,6 +13,12 @@ sap.ui.define([
     onInit: function () {
       const oAttachModel = new JSONModel([]);
       this.getView().setModel(oAttachModel, "attachmentModel");
+
+      // Busy Dialog for Upload
+      this.oBusyDialog = new BusyDialog({
+        title: "Processing",
+        text: "Please wait while we upload your vendor and files..."
+      });
 
       this._fetchVendors();
 
@@ -21,7 +28,7 @@ sap.ui.define([
     },
 
     _fetchVendors: function () {
-      fetch(`odata/v4/vendor/Vendors`)
+      fetch("odata/v4/vendor/Vendors")
         .then(response => response.json())
         .then(data => {
           const oModel = new JSONModel(data.value);
@@ -71,6 +78,10 @@ sap.ui.define([
       }
 
       try {
+        // Show BusyDialog
+        this.oBusyDialog.setText("Creating Vendor...");
+        this.oBusyDialog.open();
+
         const vendorPayload = {
           ID: Id,
           name: name,
@@ -101,25 +112,21 @@ sap.ui.define([
         // Upload files
         for (let i = 0; i < this.selectedFiles.length; i++) {
           const file = this.selectedFiles[i];
+          this.oBusyDialog.setText(`Uploading file ${i + 1} of ${this.selectedFiles.length}...`);
+
           const formData = new FormData();
           formData.append("file", file);
           formData.append("vendorID", vendorID);
-        
-          // Step 1: Get CSRF token
-          
-        
-          // Step 2: Upload the file with the token and credentials
-          const uploadResponse = await fetch(`uploadPDF`, {
+
+          const uploadResponse = await fetch("uploadPDF", {
             method: "POST",
-            
             body: formData
           });
-        
+
           if (!uploadResponse.ok) {
             throw new Error(`Failed to upload file: ${file.name}`);
           }
         }
-        
 
         MessageToast.show("Vendor and file uploaded successfully.");
         this.onInit();
@@ -130,6 +137,7 @@ sap.ui.define([
         this.byId("emailInput").setValue("");
         this.byId("phoneInput").setValue("");
         this.byId("fileUploader").clear();
+        this.oBusyDialog.close(); 
         this.selectedFiles = null;
 
       } catch (err) {

@@ -11,10 +11,12 @@ app.use(require("express").json());
 app.use(fileUpload());
 
 app.use((req, res, next) => {
-  if (req.method === 'HEAD'&& req.path === '/uploadPDF' && req.headers['x-csrf-token'] === 'Fetch') {
-    res.set('x-csrf-token', 'dummy-csrf-token'); // Set any string as dummy token
-    return res.status(200).end(); // Important: reply to HEAD/GET request
-  }
+  if ((req.method === 'HEAD' || req.method === 'GET') &&
+    req.path === '/uploadPDF' ||
+    req.headers['x-csrf-token'] === 'Fetch') {
+  res.set('x-csrf-token', 'dummy-csrf-token');
+  return res.status(200).end();
+}
   next();
 });
 
@@ -54,7 +56,7 @@ app.post('/uploadPDF', async (req, res) => {
   try {
     const vendorID = req.body.vendorID;
     if (!vendorID || !req.files || !req.files.file) return res.status(400).send("Missing vendorID or file");
-
+    console.log("Upload request files:", req.files);
     const uploadedFile = req.files.file;
     const base64Content = uploadedFile.data.toString('base64');
     await INSERT.into('my.vendor.VendorPDFs').entries({

@@ -21,8 +21,10 @@ server:
         port: 35729
         path: webapp
         delay: 300
-    - name: ui5-middleware-simpleproxy
+    - name: proxy
       afterMiddleware: compression
       configuration:
-        baseUri: "http://localhost:4004"
-        path: "/uploadPDF"
+        /odata:
+          target: "http://localhost:4004/odata"
+        uploadPDF:
+          target: "http://localhost:4004/uploadPDF"

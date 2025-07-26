@@ -2,86 +2,99 @@
   controllerName="project1.controller.View2"
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
-  displayBlock="true"
-  class="sapUiContentPadding">
-
-  <Page title="Vendor Attachments">
-    <VBox class="sapUiSmallMargin">
-      <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
-        <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle sapUiSmallMarginBottom"/>
-      </HBox>
-      <BusyIndicator id="busyIndicator" visible="false" />
-      <HBox justifyContent="Center" class="sapUiSmallMarginTop">
-        <Button text="Download All Files"
+  displayBlock="true">
+ 
+  <Page title="Vendor Details">
+    <VBox fitContainer="true" alignItems="Center" class="sapUiSmallMargin">
+     
+      <VBox width="95%">
+ 
+        <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
+          <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle" />
+        </HBox>
+ 
+        <Panel expandable="true" expanded="true" width="auto" class="sapUiSmallMarginBottom">
+          <headerToolbar>
+            <Toolbar>
+              <Title text="Attachments" />
+              <ToolbarSpacer />
+              <Button
+                text="Download All"
                 icon="sap-icon://download"
-                type="Emphasized"
+                type="Transparent"
                 press=".onDownloadAll"
-                visible="{= ${attachmentModel>/files}.length > 0 }"/>
-      </HBox>
-      <Table id="attachmentTable"
-             items="{attachmentModel>/files}"
-             class="sapUiSmallMarginTop"
-             inset="false"
-             alternateRowColors="true"
-             noDataText="No attachments available.">
-        <columns>
-          <Column width="70%">
-            <Text text="File Name" />
-          </Column>
-          <Column width="30%" hAlign="Center">
-            <Text text="Download" />
-          </Column>
-        </columns>
-        <items>
-          <ColumnListItem>
-            <cells>
-              <Text text="{attachmentModel>fileName}" />
-              <Button icon="sap-icon://download"
+                visible="{= !!${attachmentModel>/files} &amp;&amp; ${attachmentModel>/files}.length > 0 }"
+                class="sapUiTinyMarginBegin" />
+            </Toolbar>
+          </headerToolbar>
+          <content>
+            <BusyIndicator id="busyIndicator" visible="false" />
+            <Table
+              id="attachmentTable"
+              items="{attachmentModel>/files}"
+              inset="false"
+              alternateRowColors="true"
+              noDataText="No attachments available for this vendor.">
+              <columns>
+                <Column>
+                  <Text text="File Name" />
+                </Column>
+                <Column hAlign="Center" width="8rem">
+                  <Text text="Action" />
+                </Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{attachmentModel>fileName}" />
+                    <Button
+                      icon="sap-icon://download"
                       tooltip="Download File"
                       press=".onDownloadPress"
                       type="Transparent" />
-            </cells>
-          </ColumnListItem>
-        </items>
-      </Table>
-      <HBox justifyContent="Center" class="sapUiSmallMarginTop">
-        <Text id="noAttachmentsMessage"
-              visible="false"
-              text="No attachments found for this vendor."
-              class="sapUiSmallMarginTop sapMText sapUiContentPadding"/>
-      </HBox>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+ 
+        <Panel expandable="true" expanded="true" width="auto">
+          <headerToolbar>
+              <Toolbar>
+                  <Title text="Approval History" />
+              </Toolbar>
+          </headerToolbar>
+          <content>
+            <Table
+              id="ApproverTable"
+              items="{VendModel1>/}"
+              inset="false"
+              alternateRowColors="true"
+              class="leftAlignedTable"
+              fixedLayout="true"
+              width="100%"
+              busyIndicatorDelay="0">
+              <columns>
+                <Column width="8em" hAlign="Center"><Text text="Approver Level"/></Column>
+                <Column width="10em" hAlign="Center"><Text text="Approver Email"/></Column>
+                <Column width="10em" hAlign="Center"><Text text="Approver Status"/></Column>
+                <Column hAlign="Begin"><Text text="Approver Comments"/></Column>
+              </columns>
+              <items>
+                <ColumnListItem>
+                  <cells>
+                    <Text text="{VendModel1>level}" wrapping="false"/>
+                    <Text text="{VendModel1>approver_email}" wrapping="false"/>
+                    <Text text="{VendModel1>status}" wrapping="false"/>
+                    <Text text="{VendModel1>comments}" wrapping="true"/>
+                  </cells>
+                </ColumnListItem>
+              </items>
+            </Table>
+          </content>
+        </Panel>
+      </VBox>
     </VBox>
-
-    <Table
-  id="ApproverTable"
-  
-  items="{VendModel1>/}"
-  inset="false"
-  alternateRowColors="true"
-  class="leftAlignedTable"
-  fixedLayout="true"           
-  width="100%"                
-  busyIndicatorDelay="0"
-  
->
-  <columns>
-    <Column width="8em" hAlign="Center"><Text text="Approver Level"/></Column>
-    <Column width="10em" hAlign="Center"><Text text="Approver Email"/></Column>
-    <Column width="10em" hAlign="Center"><Text text="Approver Status"/></Column>
-    <Column width="10em" hAlign="Center"><Text text="Approver Comments"/></Column>
-  </columns>
-
-  <items>
-    <ColumnListItem>
-      <cells>
-        <Text text="{VendModel1>level}" wrapping="false"/>
-        <Text text="{VendModel1>approver_email}" wrapping="false"/>
-        <Text text="{VendModel1>status}" wrapping="false"/>
-        <Text text="{VendModel1>comments}" wrapping="false"/>
-      </cells>
-    </ColumnListItem>
-  </items>
-</Table>
-
   </Page>
 </mvc:View>

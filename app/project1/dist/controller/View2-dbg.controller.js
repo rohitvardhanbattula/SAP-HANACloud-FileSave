@@ -48,7 +48,7 @@ sap.ui.define([
         this.byId("vendorIdText").setText("Vendor ID: " + vendorId);
         this.byId("busyIndicator").setVisible(true);
       
-        // Attachments fetch
+        
         this.getView().setModel(new JSONModel({ files: [] }), "attachmentModel");
         fetch(`odata/v4/vendor/download?vendor_ID=${vendorId}`, {
           method: "GET",

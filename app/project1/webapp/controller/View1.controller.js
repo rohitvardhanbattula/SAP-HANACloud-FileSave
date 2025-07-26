@@ -53,7 +53,16 @@ sap.ui.define([
       });
       return response.headers.get("x-csrf-token");
     },
+    _isValidEmail: function (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    },
 
+    // Phone Number Validation (10 digits only)
+    _isValidPhone: function (phone) {
+      const phoneRegex = /^\d{10}$/;
+      return phoneRegex.test(phone);
+    },
     onSubmit: async function () {
       const Id = this.byId("idInput").getValue();
       const name = this.byId("nameInput").getValue();
@@ -64,7 +73,16 @@ sap.ui.define([
         MessageToast.show("Please fill in all vendor details and upload at least one file.");
         return;
       }
+      if (!this._isValidEmail(email)) {
+        MessageToast.show("Please enter a valid email address.");
+        return;
+      }
 
+      // Phone Number Validation
+      if (!this._isValidPhone(phone)) {
+        MessageToast.show("Please enter a valid 10-digit phone number.");
+        return;
+      }
       try {
         BusyIndicator.show(0); // Show UI Blocker
 
@@ -92,7 +110,7 @@ sap.ui.define([
           formData.append("file", file);
           formData.append("vendorID", Id);
 
-          const uploadResponse = await fetch("/uploadPDF", {
+          const uploadResponse = await fetch("uploadPDF", {
             method: "POST",
             body: formData
           });

@@ -4,8 +4,8 @@ sap.ui.define([
   "sap/ui/model/json/JSONModel",
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
-  "sap/m/BusyDialog"
-], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, BusyDialog) {
+  "sap/ui/core/BusyIndicator"
+], function (Controller, MessageToast, JSONModel, Filter, FilterOperator, BusyIndicator) {
   "use strict";
 
   return Controller.extend("project1.controller.View1", {
@@ -13,13 +13,6 @@ sap.ui.define([
     onInit: function () {
       const oAttachModel = new JSONModel([]);
       this.getView().setModel(oAttachModel, "attachmentModel");
-
-      // Busy Dialog for Upload
-      this.oBusyDialog = new BusyDialog({
-        title: "Processing",
-        text: "Please wait while we upload your vendor and files..."
-      });
-
       this._fetchVendors();
 
       setInterval(() => {
@@ -49,21 +42,16 @@ sap.ui.define([
     },
 
     onFileChange: function (oEvent) {
-      const files = oEvent.getParameter("files");
-      this.selectedFiles = files;
+      this.selectedFiles = oEvent.getParameter("files");
       console.log(this.selectedFiles);
     },
 
     getCSRFToken: async function (url) {
       const response = await fetch(url, {
         method: "GET",
-        headers: {
-          "X-CSRF-Token": "Fetch"
-        }
+        headers: { "X-CSRF-Token": "Fetch" }
       });
-
-      const token = response.headers.get("x-csrf-token");
-      return token;
+      return response.headers.get("x-csrf-token");
     },
 
     onSubmit: async function () {
@@ -78,18 +66,11 @@ sap.ui.define([
       }
 
       try {
-        // Show BusyDialog
-        this.oBusyDialog.setText("Creating Vendor...");
-        this.oBusyDialog.open();
+        BusyIndicator.show(0); // Show UI Blocker
 
-        const vendorPayload = {
-          ID: Id,
-          name: name,
-          email: email,
-          phone: phone
-        };
+        const vendorPayload = { ID: Id, name, email, phone };
 
-        // Get CSRF Token for OData service
+        // Get CSRF Token
         const csrfToken = await this.getCSRFToken("odata/v4/vendor/");
 
         // Vendor creation
@@ -102,23 +83,16 @@ sap.ui.define([
           body: JSON.stringify(vendorPayload)
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error("Vendor creation failed: " + errorText);
-        }
-
-        const vendorID = Id;
+        if (!response.ok) throw new Error("Vendor creation failed: " + await response.text());
 
         // Upload files
         for (let i = 0; i < this.selectedFiles.length; i++) {
           const file = this.selectedFiles[i];
-          this.oBusyDialog.setText(`Uploading file ${i + 1} of ${this.selectedFiles.length}...`);
-
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("vendorID", vendorID);
+          formData.append("vendorID", Id);
 
-          const uploadResponse = await fetch("uploadPDF", {
+          const uploadResponse = await fetch("/uploadPDF", {
             method: "POST",
             body: formData
           });
@@ -130,19 +104,18 @@ sap.ui.define([
 
         MessageToast.show("Vendor and file uploaded successfully.");
         this.onInit();
-
-        // Clear form
         this.byId("idInput").setValue("");
         this.byId("nameInput").setValue("");
         this.byId("emailInput").setValue("");
         this.byId("phoneInput").setValue("");
         this.byId("fileUploader").clear();
-        this.oBusyDialog.close(); 
         this.selectedFiles = null;
 
       } catch (err) {
         console.error("Error:", err);
         MessageToast.show("Error occurred during vendor or file upload.");
+      } finally {
+        BusyIndicator.hide(); // Hide UI Blocker
       }
     },
 
@@ -154,15 +127,9 @@ sap.ui.define([
       const statusVal = this.byId("statusFilter").getValue();
 
       const filters = [];
-      if (idVal) {
-        filters.push(new Filter("ID", FilterOperator.Contains, idVal));
-      }
-      if (nameVal) {
-        filters.push(new Filter("name", FilterOperator.Contains, nameVal));
-      }
-      if (statusVal) {
-        filters.push(new Filter("status", FilterOperator.Contains, statusVal));
-      }
+      if (idVal) filters.push(new Filter("ID", FilterOperator.Contains, idVal));
+      if (nameVal) filters.push(new Filter("name", FilterOperator.Contains, nameVal));
+      if (statusVal) filters.push(new Filter("status", FilterOperator.Contains, statusVal));
 
       oBinding.filter(filters);
     }

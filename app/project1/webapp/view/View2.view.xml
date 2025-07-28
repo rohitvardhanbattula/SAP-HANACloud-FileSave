@@ -2,17 +2,20 @@
   controllerName="project1.controller.View2"
   xmlns:mvc="sap.ui.core.mvc"
   xmlns="sap.m"
+  xmlns:core="sap.ui.core"
   displayBlock="true">
- 
+
   <Page title="Vendor Details">
     <VBox fitContainer="true" alignItems="Center" class="sapUiSmallMargin">
-     
-      <VBox width="95%">
- 
+
+      <VBox width="95%" class="sapUiMediumMarginBottom">
+
+        <!-- Vendor ID Display -->
         <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
-          <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle" />
+          <Text id="vendorIdText" text="Vendor ID: " class="sapMTitle sapUiSmallMarginBottom" />
         </HBox>
- 
+
+        <!-- Attachments Panel -->
         <Panel expandable="true" expanded="true" width="auto" class="sapUiSmallMarginBottom">
           <headerToolbar>
             <Toolbar>
@@ -22,6 +25,7 @@
                 text="Download All"
                 icon="sap-icon://download"
                 type="Transparent"
+                tooltip="Download all attachments"
                 press=".onDownloadAll"
                 visible="{= !!${attachmentModel>/files} &amp;&amp; ${attachmentModel>/files}.length > 0 }"
                 class="sapUiTinyMarginBegin" />
@@ -58,12 +62,13 @@
             </Table>
           </content>
         </Panel>
- 
-        <Panel expandable="true" expanded="true" width="auto">
+
+        <!-- Approval History Panel -->
+        <Panel expandable="true" expanded="true" width="auto" class="sapUiSmallMarginBottom">
           <headerToolbar>
-              <Toolbar>
-                  <Title text="Approval History" />
-              </Toolbar>
+            <Toolbar>
+              <Title text="Approval History" />
+            </Toolbar>
           </headerToolbar>
           <content>
             <Table
@@ -76,24 +81,25 @@
               width="100%"
               busyIndicatorDelay="0">
               <columns>
-                <Column width="8em" hAlign="Center"><Text text="Approver Level"/></Column>
-                <Column width="10em" hAlign="Center"><Text text="Approver Email"/></Column>
-                <Column width="10em" hAlign="Center"><Text text="Approver Status"/></Column>
-                <Column hAlign="Begin"><Text text="Approver Comments"/></Column>
+                <Column width="8em" hAlign="Center"><Text text="Approver Level" /></Column>
+                <Column width="10em" hAlign="Center"><Text text="Approver Email" /></Column>
+                <Column width="10em" hAlign="Center"><Text text="Approver Status" /></Column>
+                <Column hAlign="Begin"><Text text="Approver Comments" /></Column>
               </columns>
               <items>
                 <ColumnListItem>
                   <cells>
-                    <Text text="{VendModel1>level}" wrapping="false"/>
-                    <Text text="{VendModel1>approver_email}" wrapping="false"/>
-                    <Text text="{VendModel1>status}" wrapping="false"/>
-                    <Text text="{VendModel1>comments}" wrapping="true"/>
+                    <Text text="{VendModel1>level}" wrapping="false" />
+                    <Text text="{VendModel1>approver_email}" wrapping="false" />
+                    <Text text="{VendModel1>status}" wrapping="false" />
+                    <Text text="{VendModel1>comments}" wrapping="true" />
                   </cells>
                 </ColumnListItem>
               </items>
             </Table>
           </content>
         </Panel>
+
       </VBox>
     </VBox>
   </Page>

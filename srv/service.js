@@ -85,17 +85,27 @@ app.post('/uploadPDF', async (req, res) => {
       }
     }, 10000);
 
-    res.send("File uploaded successfully. BPA will trigger in 1 hour if no more uploads.");
+    res.send("File uploaded successfully");
   } catch (err) {
     console.error("Upload error:", err);
     res.status(500).send("Upload failed");
   }
 });
 
+async function getAppHostURLFromDestination() {
+  
+  const res = await executeHttpRequest(
+    { destinationName: 'pdfsave-destination' },
+    { method: 'GET', url: '/' }
+  );
+  cachedHost = res.config.baseURL.replace(/\/$/, '');
+  return cachedHost;
+}
+
 // BPA Workflow trigger
 async function startBPAWorkflow({ name, email, id, phone, status, approver_email, approver_level, prior_comments }) {
   const files = await SELECT.from('my.vendor.VendorPDFs').columns('ID', 'fileName').where({ vendor_ID: id });
-  const host = 'https://the-hackett-group-d-b-a-answerthink--inc--at-developmen3a1acfaf.cfapps.us10.hana.ondemand.com';
+  const host = await getAppHostURLFromDestination();
   const fileLinks = files.map(file => `${host}/downloadFile/${file.ID}`);
   const fileZipLink = `${host}/downloadZip/${id}`;
 
@@ -141,6 +151,7 @@ async function startBPAWorkflow({ name, email, id, phone, status, approver_email
     }
   );
 }
+
 
 // Trigger next approver
 async function triggerNextApprover(vendorID) {

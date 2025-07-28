@@ -15,21 +15,50 @@ sap.ui.define([
       this.getView().setModel(oAttachModel, "attachmentModel");
       this._fetchVendors();
 
-      setInterval(() => {
+      this._intervalId = setInterval(() => {
         this._fetchVendors();
       }, 10000);
+    },
+
+    onExit: function () {
+      if (this._intervalId) {
+        clearInterval(this._intervalId);
+        this._intervalId = null;
+      }
     },
 
     _fetchVendors: function () {
       fetch("odata/v4/vendor/Vendors")
         .then(response => response.json())
         .then(data => {
-          const oModel = new JSONModel(data.value);
-          this.getView().setModel(oModel, "VendModel");
+          const oModel = this.getView().getModel("VendModel");
+          if (oModel) {
+            oModel.setData(data.value);
+          } else {
+            this.getView().setModel(new JSONModel(data.value), "VendModel");
+          }
+
+          this._reapplyFilters();
         })
         .catch(err => {
           console.error("Failed to fetch vendors:", err);
         });
+    },
+
+    _reapplyFilters: function () {
+      const oTable = this.byId("vendorTable");
+      const oBinding = oTable.getBinding("items");
+
+      const idVal = this.byId("vendorIdFilter").getValue();
+      const nameVal = this.byId("vendorNameFilter").getValue();
+      const statusVal = this.byId("statusFilter").getValue();
+
+      const filters = [];
+      if (idVal) filters.push(new Filter("ID", FilterOperator.Contains, idVal));
+      if (nameVal) filters.push(new Filter("name", FilterOperator.Contains, nameVal));
+      if (statusVal) filters.push(new Filter("status", FilterOperator.Contains, statusVal));
+
+      oBinding.filter(filters);
     },
 
     onVendorSelect: function (oEvent) {
@@ -47,22 +76,28 @@ sap.ui.define([
     },
 
     getCSRFToken: async function (url) {
-      const response = await fetch(url, {
-        method: "GET",
-        headers: { "X-CSRF-Token": "Fetch" }
-      });
-      return response.headers.get("x-csrf-token");
+      try {
+        const response = await fetch(url, {
+          method: "GET",
+          headers: { "X-CSRF-Token": "Fetch" }
+        });
+        return response.headers.get("x-csrf-token");
+      } catch (err) {
+        console.error("CSRF Token fetch failed:", err);
+        return null;
+      }
     },
+
     _isValidEmail: function (email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email);
     },
 
-    // Phone Number Validation (10 digits only)
     _isValidPhone: function (phone) {
       const phoneRegex = /^\d{10}$/;
       return phoneRegex.test(phone);
     },
+
     onSubmit: async function () {
       const Id = this.byId("idInput").getValue();
       const name = this.byId("nameInput").getValue();
@@ -73,25 +108,24 @@ sap.ui.define([
         MessageToast.show("Please fill in all vendor details and upload at least one file.");
         return;
       }
+
       if (!this._isValidEmail(email)) {
         MessageToast.show("Please enter a valid email address.");
         return;
       }
 
-      // Phone Number Validation
       if (!this._isValidPhone(phone)) {
         MessageToast.show("Please enter a valid 10-digit phone number.");
         return;
       }
+
       try {
         BusyIndicator.show(0); // Show UI Blocker
 
         const vendorPayload = { ID: Id, name, email, phone };
 
-        // Get CSRF Token
         const csrfToken = await this.getCSRFToken("odata/v4/vendor/");
 
-        // Vendor creation
         const response = await fetch("odata/v4/vendor/VendorCreation", {
           method: "POST",
           headers: {
@@ -103,7 +137,6 @@ sap.ui.define([
 
         if (!response.ok) throw new Error("Vendor creation failed: " + await response.text());
 
-        // Upload files
         for (let i = 0; i < this.selectedFiles.length; i++) {
           const file = this.selectedFiles[i];
           const formData = new FormData();
@@ -121,7 +154,7 @@ sap.ui.define([
         }
 
         MessageToast.show("Vendor and file uploaded successfully.");
-        this.onInit();
+        await this._fetchVendors(); // Only re-fetch, no need to call onInit
         this.byId("idInput").setValue("");
         this.byId("nameInput").setValue("");
         this.byId("emailInput").setValue("");
@@ -138,18 +171,8 @@ sap.ui.define([
     },
 
     onFilter: function () {
-      const oTable = this.byId("vendorTable");
-      const oBinding = oTable.getBinding("items");
-      const idVal = this.byId("vendorIdFilter").getValue();
-      const nameVal = this.byId("vendorNameFilter").getValue();
-      const statusVal = this.byId("statusFilter").getValue();
-
-      const filters = [];
-      if (idVal) filters.push(new Filter("ID", FilterOperator.Contains, idVal));
-      if (nameVal) filters.push(new Filter("name", FilterOperator.Contains, nameVal));
-      if (statusVal) filters.push(new Filter("status", FilterOperator.Contains, statusVal));
-
-      oBinding.filter(filters);
+      this._reapplyFilters();
     }
+
   });
 });

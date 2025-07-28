@@ -5,41 +5,60 @@
   xmlns:u="sap.ui.unified"
   displayBlock="true"
   class="sapUiContentPadding">
- 
+
   <Page>
-    <customHeader >
+    <customHeader>
       <Bar>
         <contentMiddle>
-          <Title text="Vendor Management" level="H2"/>
+          <Title text="Vendor Management" level="H2" />
         </contentMiddle>
       </Bar>
     </customHeader>
-   
+
     <VBox class="sapUiSmallMargin createVendorBox">
-        <Title title="Create Vendor" level="H3" class="sapUiSmallMarginBottom sapUiSmallMarginBegin"/>
-        <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
-          <Input id="idInput" placeholder="Vendor ID" class="sapUiTinyMarginEnd" width="12rem"/>
-          <Input id="nameInput" placeholder="Vendor Name" class="sapUiTinyMarginEnd" width="12rem"/>
-          <Input id="emailInput" placeholder="Email" class="sapUiTinyMarginEnd" width="14rem"/>
-          <Input id="phoneInput" placeholder="Phone" class="sapUiTinyMarginEnd" width="10rem"/>
-        </HBox>
- 
-        <HBox justifyContent="Center" alignItems="Center" class="sapUiSmallMarginBottom">
+      <Title text="Create Vendor" level="H3" class="sapUiSmallMarginBottom sapUiSmallMarginBegin" />
+
+      <HBox justifyContent="Center" alignItems="Start" class="sapUiSmallMarginBottom">
+        <VBox class="sapUiTinyMarginEnd">
+          <Label text="Vendor ID" labelFor="idInput"/>
+          <Input id="idInput" placeholder="Enter Vendor ID" width="12rem" />
+        </VBox>
+
+        <VBox class="sapUiTinyMarginEnd">
+          <Label text="Vendor Name" labelFor="nameInput"/>
+          <Input id="nameInput" placeholder="Enter Vendor Name" width="12rem" />
+        </VBox>
+
+        <VBox class="sapUiTinyMarginEnd">
+          <Label text="Email" labelFor="emailInput"/>
+          <Input id="emailInput" placeholder="Enter Email" width="14rem" />
+        </VBox>
+
+        <VBox class="sapUiTinyMarginEnd">
+          <Label text="Phone" labelFor="phoneInput"/>
+          <Input id="phoneInput" placeholder="Enter Phone" width="10rem" />
+        </VBox>
+      </HBox>
+
+      <HBox justifyContent="Center" alignItems="End" class="sapUiSmallMarginBottom">
+        <VBox class="sapUiTinyMarginEnd">
+          <Label text="Attachments" labelFor="fileUploader"/>
           <u:FileUploader
             id="fileUploader"
             name="myFileUpload"
             multiple="true"
             fileType="pdf,docx,jpeg,png"
-            change="onFileChange"
-            class="sapUiTinyMarginEnd"/>
-          <Button text="Submit" press="onSubmit" type="Emphasized"/>
-        </HBox>
+            change="onFileChange"/>
+        </VBox>
+        <Button text="Submit" press="onSubmit" type="Emphasized" class="sapUiTinyMarginTop"/>
+      </HBox>
     </VBox>
- 
+
     <VBox class="sapUiSmallMarginTop">
       <HBox justifyContent="Center">
         <Title text="Vendor Details" level="H3" class="sapUiSmallMarginBottom"/>
       </HBox>
+
       <HBox justifyContent="Center" class="sapUiSmallMarginBottom">
         <Toolbar class="filterToolbar">
           <Input id="vendorIdFilter" placeholder="Filter by ID" width="10rem" liveChange="onFilter"/>
@@ -47,6 +66,7 @@
           <Input id="statusFilter" placeholder="Filter by Status" width="10rem" liveChange="onFilter"/>
         </Toolbar>
       </HBox>
+
       <Table
         id="vendorTable"
         mode="SingleSelectMaster"
@@ -65,7 +85,7 @@
           <Column width="10em" hAlign="Center"><Text text="Phone"/></Column>
           <Column width="8em" hAlign="Center"><Text text="Status"/></Column>
         </columns>
- 
+
         <items>
           <ColumnListItem>
             <cells>

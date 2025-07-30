@@ -21,5 +21,11 @@ service VendorService {
     status : String;
     comments: String;
   };
+  function getVendorList() returns array of {
+  businessPartner : String;
+  fullName        : String;
+  firstName       : String;
+  lastName        : String;
+};
 
 }

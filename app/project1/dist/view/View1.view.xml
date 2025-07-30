@@ -14,46 +14,9 @@
         </contentMiddle>
       </Bar>
     </customHeader>
-
-    <VBox class="sapUiSmallMargin createVendorBox">
-      <Title text="Create Vendor" level="H3" class="sapUiSmallMarginBottom sapUiSmallMarginBegin" />
-
-      <HBox justifyContent="Center" alignItems="Start" class="sapUiSmallMarginBottom">
-        <VBox class="sapUiTinyMarginEnd">
-          <Label text="Vendor ID" labelFor="idInput"/>
-          <Input id="idInput" placeholder="Enter Vendor ID" width="12rem" />
-        </VBox>
-
-        <VBox class="sapUiTinyMarginEnd">
-          <Label text="Vendor Name" labelFor="nameInput"/>
-          <Input id="nameInput" placeholder="Enter Vendor Name" width="12rem" />
-        </VBox>
-
-        <VBox class="sapUiTinyMarginEnd">
-          <Label text="Email" labelFor="emailInput"/>
-          <Input id="emailInput" placeholder="Enter Email" width="14rem" />
-        </VBox>
-
-        <VBox class="sapUiTinyMarginEnd">
-          <Label text="Phone" labelFor="phoneInput"/>
-          <Input id="phoneInput" placeholder="Enter Phone" width="10rem" />
-        </VBox>
+    <HBox justifyContent="Center">
+      <Button text="Create Vendor" type="Emphasized" press="onCreateVendor"/>
       </HBox>
-
-      <HBox justifyContent="Center" alignItems="End" class="sapUiSmallMarginBottom">
-        <VBox class="sapUiTinyMarginEnd">
-          <Label text="Attachments" labelFor="fileUploader"/>
-          <u:FileUploader
-            id="fileUploader"
-            name="myFileUpload"
-            multiple="true"
-            fileType="pdf,docx,jpeg,png"
-            change="onFileChange"/>
-        </VBox>
-        <Button text="Submit" press="onSubmit" type="Emphasized" class="sapUiTinyMarginTop"/>
-      </HBox>
-    </VBox>
-
     <VBox class="sapUiSmallMarginTop">
       <HBox justifyContent="Center">
         <Title text="Vendor Details" level="H3" class="sapUiSmallMarginBottom"/>

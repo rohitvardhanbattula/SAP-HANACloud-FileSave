@@ -1,0 +1,39 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:u="sap.ui.unified">
+  <Dialog
+    id="createVendorDialog"
+    title="Create Vendor"
+    class="sapUiContentPadding"
+    draggable="true"
+    resizable="true"
+    contentWidth="600px"
+    contentHeight="auto"
+    afterClose="onDialogClose">
+
+    <VBox>
+      <Label text="Vendor ID"/>
+      <Input id="newVendorId" placeholder="Enter Vendor ID"/>
+
+      <Label text="Vendor Name"/>
+      <Input id="newVendorName" placeholder="Enter Vendor Name"/>
+
+      <Label text="Email"/>
+      <Input id="newVendorEmail" placeholder="Enter Email"/>
+
+      <Label text="Phone"/>
+      <Input id="newVendorPhone" placeholder="Enter Phone"/>
+
+      <Label text="Attachments"/>
+      <u:FileUploader id="newFileUploader" multiple="true" fileType="pdf,docx,jpeg,png" change="onFileChange"/>
+    </VBox>
+
+    <beginButton>
+      <Button text="Submit" press="onSubmitNewVendor" type="Emphasized"/>
+    </beginButton>
+    <endButton>
+      <Button text="Cancel" press="onCancelVendor"/>
+    </endButton>
+  </Dialog>
+</core:FragmentDefinition>
